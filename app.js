@@ -18,12 +18,12 @@ const DESKTOP_POINTS = [
 ];
 
 const MOBILE_POINTS = [
-  { x: 18, y: 53.8, side: "top", size: .64 },
-  { x: 18, y: 68.8, side: "bottom", size: .60 },
-  { x: 50, y: 53.8, side: "top", size: .64 },
-  { x: 50, y: 68.8, side: "bottom", size: .60 },
-  { x: 82, y: 53.8, side: "top", size: .64 },
-  { x: 82, y: 68.8, side: "bottom", size: .60 },
+  { x: 18, y: 50.8, side: "top", size: .62 },
+  { x: 18, y: 69.6, side: "bottom", size: .58 },
+  { x: 50, y: 50.8, side: "top", size: .62 },
+  { x: 50, y: 69.6, side: "bottom", size: .58 },
+  { x: 82, y: 50.8, side: "top", size: .62 },
+  { x: 82, y: 69.6, side: "bottom", size: .58 },
 ];
 
 const state = {
@@ -145,7 +145,237 @@ function getAge(person) {
   return Number.isFinite(n) ? n : null;
 }
 
+
+const CUSTOM_APPEARANCE_ORDER = [
+  [
+    "ליבשטיין",
+    "אופיר"
+  ],
+  [
+    "צדיקביץ",
+    "עומר"
+  ],
+  [
+    "קוץ",
+    "אביב"
+  ],
+  [
+    "קוץ",
+    "ליבנת"
+  ],
+  [
+    "קוץ",
+    "רותם"
+  ],
+  [
+    "קוץ",
+    "יונתן"
+  ],
+  [
+    "קוץ",
+    "יפתח"
+  ],
+  [
+    "זוהר",
+    "יניב"
+  ],
+  [
+    "זוהר",
+    "יסמין"
+  ],
+  [
+    "זוהר",
+    "קשת"
+  ],
+  [
+    "זוהר",
+    "תכלת"
+  ],
+  [
+    "ליבשטיין",
+    "ניצן"
+  ],
+  [
+    "גולדשטיין",
+    "אלמוג",
+    "נדב"
+  ],
+  [
+    "גולדשטיין",
+    "אלמוג",
+    "ים"
+  ],
+  [
+    "אדמוני",
+    "מיכל"
+  ],
+  [
+    "אדמוני",
+    "גיא"
+  ],
+  [
+    "איתמרי",
+    "רם"
+  ],
+  [
+    "איתמרי",
+    "לילי"
+  ],
+  [
+    "ברדיצסקי",
+    "איתי"
+  ],
+  [
+    "ברדיצסקי",
+    "הדר"
+  ],
+  [
+    "אפשטיין",
+    "בלהה"
+  ],
+  [
+    "אפשטיין",
+    "נטע"
+  ],
+  [
+    "גורן",
+    "טובה"
+  ],
+  [
+    "גורן",
+    "ארן"
+  ],
+  [
+    "ורטהיים",
+    "דורית"
+  ],
+  [
+    "ורטהיים",
+    "אביב"
+  ],
+  [
+    "זיו",
+    "איתן"
+  ],
+  [
+    "פלג",
+    "זיו",
+    "תמי"
+  ],
+  [
+    "פלד",
+    "גילה"
+  ],
+  [
+    "פלד",
+    "יזהר"
+  ],
+  [
+    "פלד",
+    "דניאל"
+  ],
+  [
+    "פלש",
+    "יגאל"
+  ],
+  [
+    "פלש",
+    "תמר"
+  ],
+  [
+    "שוורצמן",
+    "דוד"
+  ],
+  [
+    "שוורצמן",
+    "אורלי"
+  ],
+  [
+    "עידן",
+    "צחי"
+  ],
+  [
+    "עידן",
+    "מעיין"
+  ],
+  [
+    "עידן",
+    "רועי"
+  ],
+  [
+    "עידן",
+    "סמדר"
+  ],
+  [
+    "אליקים",
+    "נועם"
+  ],
+  [
+    "ערבה",
+    "דקלה"
+  ],
+  [
+    "ערבה",
+    "אליעז",
+    "תומר"
+  ],
+  [
+    "רביב",
+    "ניב"
+  ],
+  [
+    "זיני",
+    "ניראל"
+  ],
+  [
+    "אלקבץ",
+    "סיון"
+  ],
+  [
+    "חסידים",
+    "נאור"
+  ],
+  [
+    "חגבי",
+    "זיו"
+  ],
+  [
+    "חגבי",
+    "יהונתן"
+  ],
+  [
+    "חגבי",
+    "אליצור"
+  ],
+  [
+    "חגבי",
+    "יזהר"
+  ]
+];
+
+function cleanOrderText(value) {
+  return normalizeText(value)
+    .replace(/ז"?ל|ז״ל/gu, "")
+    .replace(/[׳'`״"]/gu, "")
+    .replace(/[()\[\].,:;־\-–—]/gu, " ")
+    .replace(/\s+/gu, " ")
+    .trim();
+}
+
+function customOrderRank(person) {
+  const text = cleanOrderText(`${person.name || ""} ${formatDisplayName(person.name || "")}`);
+  const index = CUSTOM_APPEARANCE_ORDER.findIndex((tokens) =>
+    tokens.every((token) => text.includes(cleanOrderText(token)))
+  );
+  return index >= 0 ? index : Number.MAX_SAFE_INTEGER;
+}
+
 function sortPeople(a, b) {
+  const rankA = customOrderRank(a);
+  const rankB = customOrderRank(b);
+
+  if (rankA !== rankB) return rankA - rankB;
+
   const ageA = getAge(a);
   const ageB = getAge(b);
 

@@ -1,3 +1,3 @@
-This package intentionally does not include the images/ folder.
-Copy your existing images/ folder next to index.html when publishing or testing with real portraits.
-This V2 package includes a safer fallback so missing images do not show full alt text inside the portrait circles.
+החבילה אינה כוללת את תיקיית images לפי הבקשה.
+כדי לראות תמונות אמיתיות, העתיקו את תיקיית images המקורית לתוך אותה תיקייה שבה נמצא index.html.
+האתר כולל fallback של ראשי תיבות כאשר תמונה חסרה.

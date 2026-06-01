@@ -3929,3 +3929,321 @@ body {
     margin-top: .34rem !important;
   }
 }
+
+
+/* ==========================================================
+   V4 synced final mobile polish
+   - removes story filter UI
+   - search moves between poem and people on mobile only
+   - controls stay at bottom on mobile only
+   - 3+3 portrait grid with clear vertical spacing
+   - labels stay BELOW their own portrait, never under another card
+   ========================================================== */
+
+.filter-box,
+#story-filter {
+  display: none !important;
+}
+
+@media (max-width: 900px) and (orientation: portrait) {
+  html,
+  body,
+  .memory-stage,
+  .timeline-stage {
+    min-height: 100svh !important;
+  }
+
+  @supports (height: 100dvh) {
+    html,
+    body,
+    .memory-stage,
+    .timeline-stage {
+      min-height: 100dvh !important;
+      height: 100dvh !important;
+    }
+  }
+
+  /* On mobile only, the top bar becomes two separate zones:
+     search between poem/cards, navigation controls at bottom. */
+  .top-bar {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 150 !important;
+    display: block !important;
+    padding: 0 !important;
+    background: transparent !important;
+    pointer-events: none !important;
+  }
+
+  .top-bar > * {
+    pointer-events: auto !important;
+  }
+
+  .search-box {
+    position: fixed !important;
+    top: 36.5% !important;
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
+    width: min(84vw, 23rem) !important;
+    height: 2.65rem !important;
+    margin: 0 !important;
+    padding: .42rem .82rem !important;
+    z-index: 155 !important;
+  }
+
+  .search-box input {
+    font-size: .92rem !important;
+    line-height: 1.1 !important;
+  }
+
+  .controls {
+    position: fixed !important;
+    left: 50% !important;
+    right: auto !important;
+    bottom: max(.72rem, calc(env(safe-area-inset-bottom) + .18rem)) !important;
+    transform: translateX(-50%) !important;
+    width: min(92vw, 28rem) !important;
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: .58rem !important;
+    z-index: 155 !important;
+  }
+
+  .ghost-btn {
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 2.78rem !important;
+    padding: .45rem .52rem !important;
+    border-radius: .82rem !important;
+    font-size: .92rem !important;
+    line-height: 1 !important;
+  }
+
+  /* People and tissue: balanced, no stacked/overlapping cards. */
+  .human-fabric-svg {
+    top: 61.5% !important;
+    height: 21vh !important;
+    width: 112vw !important;
+    left: -6vw !important;
+    right: auto !important;
+  }
+
+  .gold-network-svg,
+  .heartbeat-svg {
+    top: 62% !important;
+    height: 17vh !important;
+    width: 112vw !important;
+    left: -6vw !important;
+    right: auto !important;
+  }
+
+  .timeline-stage::before {
+    top: 62% !important;
+    width: 92vw !important;
+    height: 21vh !important;
+  }
+
+  .timeline-stage::after {
+    top: 62.5% !important;
+    width: 84vw !important;
+    height: 15vh !important;
+  }
+
+  .timeline-layer {
+    z-index: 15 !important;
+  }
+
+  .person-node {
+    width: 5.82rem !important;
+    z-index: 30 !important;
+  }
+
+  .person-node.is-top,
+  .person-node.is-bottom {
+    z-index: 34 !important;
+  }
+
+  .person-node[data-slot-index="0"] { right: 18% !important; left: auto !important; top: 50.8% !important; }
+  .person-node[data-slot-index="1"] { right: 18% !important; left: auto !important; top: 69.6% !important; }
+  .person-node[data-slot-index="2"] { right: 50% !important; left: auto !important; top: 50.8% !important; }
+  .person-node[data-slot-index="3"] { right: 50% !important; left: auto !important; top: 69.6% !important; }
+  .person-node[data-slot-index="4"] { right: 82% !important; left: auto !important; top: 50.8% !important; }
+  .person-node[data-slot-index="5"] { right: 82% !important; left: auto !important; top: 69.6% !important; }
+  .person-node[data-slot-index="6"] { right: 34% !important; left: auto !important; top: 77.5% !important; }
+  .person-node[data-slot-index="7"] { right: 66% !important; left: auto !important; top: 77.5% !important; }
+
+  /* All labels below the portrait; row spacing prevents overlap. */
+  .person-node.is-top .person-button,
+  .person-node.is-bottom .person-button,
+  .person-button {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: .42rem !important;
+  }
+
+  .person-node.is-top .portrait-frame,
+  .person-node.is-bottom .portrait-frame,
+  .portrait-frame {
+    order: 1 !important;
+    position: relative !important;
+    z-index: 3 !important;
+    width: 4.45rem !important;
+    padding: .23rem !important;
+  }
+
+  .person-node.is-top .person-name,
+  .person-node.is-bottom .person-name,
+  .person-name {
+    order: 2 !important;
+    position: relative !important;
+    z-index: 4 !important;
+    margin: 0 !important;
+    max-width: 5.45rem !important;
+    padding: .30rem .42rem .28rem !important;
+    font-size: .58rem !important;
+    line-height: 1.05 !important;
+    border-radius: .52rem !important;
+    transform: none !important;
+    backdrop-filter: blur(8px) saturate(1.1) !important;
+    -webkit-backdrop-filter: blur(8px) saturate(1.1) !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,.44) !important;
+  }
+
+  /* No-images fallback: initials only, not alt text. */
+  .portrait-placeholder {
+    display: grid !important;
+    place-items: center !important;
+    width: 100% !important;
+    height: 100% !important;
+    border-radius: inherit !important;
+    overflow: hidden !important;
+    white-space: nowrap !important;
+    font-size: clamp(.95rem, 5vw, 1.35rem) !important;
+    line-height: 1 !important;
+  }
+
+  .portrait-frame img {
+    color: transparent !important;
+    font-size: 0 !important;
+  }
+
+  /* Focus mode should not enlarge enough to cause overlap on mobile. */
+  .memory-stage.is-focus-mode .person-node.is-visible.is-focused,
+  .memory-stage.is-focus-mode .person-node.is-visible.is-related {
+    transform: translateY(0) scale(1.008) !important;
+  }
+
+  /* Story/detail modal mobile spacing safeguards. */
+  .story-panel,
+  .story-card,
+  .person-detail,
+  .modal-card {
+    width: min(94vw, 42rem) !important;
+    max-width: 94vw !important;
+  }
+
+  .story-hero,
+  .detail-hero,
+  .profile-hero,
+  .story-layout,
+  .detail-layout {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+
+  .story-hero img,
+  .detail-hero img,
+  .profile-hero img,
+  .story-photo,
+  .detail-photo,
+  .profile-photo,
+  .story-image,
+  .detail-image {
+    width: min(82vw, 18rem) !important;
+    max-height: 42vh !important;
+    object-fit: cover !important;
+    justify-self: center !important;
+  }
+}
+
+/* Very short phones: slightly smaller and tighter but still non-overlapping. */
+@media (max-width: 900px) and (orientation: portrait) and (max-height: 740px) {
+  .search-box {
+    top: 35.4% !important;
+    height: 2.45rem !important;
+  }
+
+  .human-fabric-svg {
+    top: 61% !important;
+    height: 20vh !important;
+  }
+
+  .gold-network-svg,
+  .heartbeat-svg {
+    top: 61.4% !important;
+    height: 15.5vh !important;
+  }
+
+  .person-node {
+    width: 5.45rem !important;
+  }
+
+  .portrait-frame {
+    width: 4.12rem !important;
+  }
+
+  .person-name {
+    max-width: 5.1rem !important;
+    font-size: .54rem !important;
+    padding: .25rem .34rem .24rem !important;
+  }
+
+  .person-node[data-slot-index="0"],
+  .person-node[data-slot-index="2"],
+  .person-node[data-slot-index="4"] {
+    top: 50.3% !important;
+  }
+
+  .person-node[data-slot-index="1"],
+  .person-node[data-slot-index="3"],
+  .person-node[data-slot-index="5"] {
+    top: 68.9% !important;
+  }
+
+  .controls {
+    gap: .42rem !important;
+  }
+
+  .ghost-btn {
+    height: 2.52rem !important;
+    font-size: .84rem !important;
+  }
+}
+
+
+/* Art-deco specific final polish */
+@media (max-width: 900px) and (orientation: portrait) {
+  .person-name {
+    background:
+      radial-gradient(circle at 50% 0%, rgba(255,232,158,.18), transparent 55%),
+      linear-gradient(180deg, rgba(92, 66, 32, .96), rgba(39, 31, 22, .95)) !important;
+    border-color: rgba(226, 183, 90, .52) !important;
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 248, 205, .12),
+      0 8px 18px rgba(0,0,0,.30),
+      0 0 14px rgba(230, 188, 93, .16) !important;
+  }
+
+  .portrait-frame {
+    box-shadow:
+      inset 0 0 0 1px rgba(255,255,255,.20),
+      0 0 0 .12rem rgba(69, 46, 21, .92),
+      0 0 0 .22rem rgba(221, 176, 77, .34),
+      0 0 22px rgba(255, 207, 102, .22),
+      0 12px 22px rgba(0,0,0,.34) !important;
+  }
+}

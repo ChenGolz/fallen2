@@ -108,3 +108,14 @@ V17:
 V18:
 - Mobile portrait only: enlarged toolbar, poem, tissue, portraits, and labels slightly.
 - Kept the V17 layout/positions unchanged.
+
+
+V3 custom appearance order applied.
+
+
+V4 synced final:
+- Same content/data/order/functionality as the matching version.
+- Removed story filter UI.
+- Mobile search is between poem and people cards; controls are at the bottom.
+- Mobile portrait grid spacing fixed to avoid overlapping cards/names.
+- Images folder omitted by request.
