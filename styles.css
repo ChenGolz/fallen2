@@ -3140,3 +3140,440 @@ body {
   .person-node[data-slot-index="3"],
   .person-node[data-slot-index="5"] { top: 79.5% !important; }
 }
+
+
+
+/* ==========================================================
+   V14 mobile responsiveness:
+   - phones / portrait tablets use a 3+3 layout instead of squeezed desktop
+   - less empty space between poem and portraits
+   - controls are readable and do not fight the poem
+   ========================================================== */
+
+@supports (height: 100dvh) {
+  .memory-stage,
+  .timeline-stage {
+    min-height: 100dvh !important;
+    height: 100dvh !important;
+  }
+}
+
+@media (max-width: 900px) and (orientation: portrait) {
+  body {
+    overflow: hidden !important;
+  }
+
+  .memory-stage,
+  .timeline-stage {
+    min-height: 100svh !important;
+    height: 100svh !important;
+  }
+
+  /* Compact two-row mobile toolbar */
+  .top-bar {
+    position: fixed !important;
+    top: max(.55rem, env(safe-area-inset-top)) !important;
+    bottom: auto !important;
+    inset-inline: .7rem !important;
+    z-index: 140 !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    grid-template-areas:
+      "search filter"
+      "controls controls" !important;
+    gap: .48rem !important;
+    padding: 0 !important;
+    background: transparent !important;
+    pointer-events: none !important;
+    direction: rtl !important;
+  }
+
+  .search-box {
+    grid-area: search !important;
+    width: 100% !important;
+    height: 2.25rem !important;
+    padding: .35rem .65rem !important;
+    justify-self: stretch !important;
+  }
+
+  .search-box input {
+    font-size: .78rem !important;
+  }
+
+  .filter-box {
+    grid-area: filter !important;
+    justify-self: stretch !important;
+  }
+
+  .filter-box select {
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 2.25rem !important;
+    padding: .35rem .65rem !important;
+    font-size: .78rem !important;
+  }
+
+  .controls {
+    grid-area: controls !important;
+    justify-self: center !important;
+    gap: .45rem !important;
+  }
+
+  .ghost-btn {
+    min-width: 3.65rem !important;
+    height: 2.25rem !important;
+    padding: .32rem .55rem !important;
+    border-radius: .72rem !important;
+    font-size: .78rem !important;
+  }
+
+  #pause-btn {
+    min-width: 2.75rem !important;
+  }
+
+  /* Poem sits below toolbar, readable but compact */
+  .hero-title {
+    top: max(5.05rem, calc(env(safe-area-inset-top) + 4.6rem)) !important;
+    inset-inline: .55rem !important;
+  }
+
+  .hero-poem .poem-panel {
+    width: min(35rem, 92vw) !important;
+    min-height: auto !important;
+    padding: .78rem .92rem .74rem !important;
+    border-radius: 1.05rem !important;
+  }
+
+  .hero-poem .poem-panel::before {
+    width: 1.95rem !important;
+    height: 1.95rem !important;
+    top: -.78rem !important;
+    font-size: 1rem !important;
+  }
+
+  .hero-poem .poem-panel::after {
+    inset: .34rem !important;
+    border-radius: .84rem !important;
+  }
+
+  .hero-poem .poem-panel > p::before,
+  .hero-poem .poem-panel > p::after {
+    display: none !important;
+  }
+
+  .hero-poem .poem-panel p {
+    gap: .22rem !important;
+    line-height: 1.34 !important;
+    font-size: clamp(.76rem, 2.9vw, .98rem) !important;
+  }
+
+  .hero-poem .poem-panel span.single-line {
+    white-space: normal !important;
+  }
+
+  /* Bring the tissue and people up from the bottom; no huge empty middle */
+  .human-fabric-svg {
+    top: 57.2% !important;
+    height: 24vh !important;
+    width: 112vw !important;
+    left: -6vw !important;
+    right: auto !important;
+    opacity: .86 !important;
+  }
+
+  .gold-network-svg {
+    top: 57.6% !important;
+    height: 19vh !important;
+    width: 112vw !important;
+    left: -6vw !important;
+    right: auto !important;
+    opacity: .38 !important;
+  }
+
+  .timeline-stage::before {
+    top: 57.5% !important;
+    width: 92vw !important;
+    height: 24vh !important;
+    opacity: .15 !important;
+  }
+
+  .timeline-stage::after {
+    top: 58% !important;
+    width: 84vw !important;
+    height: 18vh !important;
+    opacity: .12 !important;
+  }
+
+  /* 3 columns x 2 rows for mobile */
+  .person-node {
+    width: 5.55rem !important;
+  }
+
+  .portrait-frame {
+    width: 4.25rem !important;
+    padding: .22rem !important;
+  }
+
+  .person-name {
+    max-width: 5.25rem !important;
+    padding: .27rem .38rem .25rem !important;
+    font-size: .56rem !important;
+    line-height: 1.03 !important;
+    border-radius: .48rem !important;
+  }
+
+  .person-node[data-slot-index="0"] { right: 18% !important; left: auto !important; top: 51.8% !important; }
+  .person-node[data-slot-index="1"] { right: 18% !important; left: auto !important; top: 68.6% !important; }
+  .person-node[data-slot-index="2"] { right: 50% !important; left: auto !important; top: 51.8% !important; }
+  .person-node[data-slot-index="3"] { right: 50% !important; left: auto !important; top: 68.6% !important; }
+  .person-node[data-slot-index="4"] { right: 82% !important; left: auto !important; top: 51.8% !important; }
+  .person-node[data-slot-index="5"] { right: 82% !important; left: auto !important; top: 68.6% !important; }
+
+  /* If 8 slots are ever rendered on a portrait tablet, keep them off the edges */
+  .person-node[data-slot-index="6"] { right: 34% !important; left: auto !important; top: 77.5% !important; }
+  .person-node[data-slot-index="7"] { right: 66% !important; left: auto !important; top: 77.5% !important; }
+
+  .person-node::after {
+    opacity: .48 !important;
+    width: 2.35rem !important;
+    height: .72rem !important;
+    filter: blur(6px) !important;
+  }
+
+  /* Story cards/modal: prevent image/text overlap on mobile */
+  .story-panel,
+  .story-card,
+  .person-detail,
+  .modal-card {
+    max-width: 94vw !important;
+  }
+
+  .story-hero,
+  .detail-hero,
+  .profile-hero {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+
+  .story-hero img,
+  .detail-hero img,
+  .profile-hero img,
+  .story-photo,
+  .detail-photo,
+  .profile-photo {
+    width: min(82vw, 18rem) !important;
+    max-height: 42vh !important;
+    object-fit: cover !important;
+    justify-self: center !important;
+  }
+}
+
+@media (max-width: 900px) and (orientation: portrait) and (max-height: 740px) {
+  .hero-title {
+    top: 4.55rem !important;
+  }
+
+  .hero-poem .poem-panel {
+    padding: .62rem .8rem .58rem !important;
+  }
+
+  .hero-poem .poem-panel p {
+    font-size: .72rem !important;
+    gap: .14rem !important;
+  }
+
+  .human-fabric-svg { top: 58.5% !important; height: 22vh !important; }
+  .gold-network-svg { top: 59% !important; height: 17vh !important; }
+
+  .person-node[data-slot-index="0"],
+  .person-node[data-slot-index="2"],
+  .person-node[data-slot-index="4"] { top: 53% !important; }
+
+  .person-node[data-slot-index="1"],
+  .person-node[data-slot-index="3"],
+  .person-node[data-slot-index="5"] { top: 70.5% !important; }
+}
+
+@media (max-width: 900px) and (orientation: landscape) {
+  .top-bar {
+    transform: scale(.86);
+    transform-origin: top center;
+  }
+
+  .hero-title {
+    top: 3.65rem !important;
+  }
+
+  .hero-poem .poem-panel {
+    min-height: auto !important;
+    padding: .62rem 1rem !important;
+  }
+
+  .hero-poem .poem-panel p {
+    font-size: .78rem !important;
+    gap: .14rem !important;
+  }
+}
+
+/* V15: lower the poem slightly on mobile portrait only; nothing else changes */
+@media (max-width: 900px) and (orientation: portrait) {
+  .hero-title {
+    top: max(5.9rem, calc(env(safe-area-inset-top) + 5.35rem)) !important;
+  }
+}
+
+@media (max-width: 900px) and (orientation: portrait) and (max-height: 740px) {
+  .hero-title {
+    top: 5.15rem !important;
+  }
+}
+
+/* V16: keep only the poem at the top on mobile portrait;
+   move the toolbar + fabric + portraits down toward the bottom of the screen. */
+@media (max-width: 900px) and (orientation: portrait) {
+  .top-bar {
+    top: auto !important;
+    bottom: max(.6rem, calc(env(safe-area-inset-bottom) + .1rem)) !important;
+    inset-inline: .7rem !important;
+    z-index: 140 !important;
+  }
+
+  .human-fabric-svg {
+    top: 68.8% !important;
+    height: 18vh !important;
+    width: 112vw !important;
+    left: -6vw !important;
+    right: auto !important;
+  }
+
+  .gold-network-svg {
+    top: 69.2% !important;
+    height: 14vh !important;
+    width: 112vw !important;
+    left: -6vw !important;
+    right: auto !important;
+    opacity: .34 !important;
+  }
+
+  .timeline-stage::before {
+    top: 69.1% !important;
+    width: 92vw !important;
+    height: 18vh !important;
+    opacity: .14 !important;
+  }
+
+  .timeline-stage::after {
+    top: 69.5% !important;
+    width: 84vw !important;
+    height: 14vh !important;
+    opacity: .10 !important;
+  }
+
+  .person-node[data-slot-index="0"],
+  .person-node[data-slot-index="2"],
+  .person-node[data-slot-index="4"] { top: 61.5% !important; }
+
+  .person-node[data-slot-index="1"],
+  .person-node[data-slot-index="3"],
+  .person-node[data-slot-index="5"] { top: 76.2% !important; }
+
+  .person-node[data-slot-index="6"] { top: 82.5% !important; }
+  .person-node[data-slot-index="7"] { top: 82.5% !important; }
+}
+
+@media (max-width: 900px) and (orientation: portrait) and (max-height: 740px) {
+  .top-bar {
+    bottom: max(.45rem, calc(env(safe-area-inset-bottom) + .05rem)) !important;
+  }
+
+  .human-fabric-svg { top: 67.8% !important; height: 17vh !important; }
+  .gold-network-svg { top: 68.2% !important; height: 13vh !important; }
+  .timeline-stage::before { top: 68.1% !important; height: 17vh !important; }
+  .timeline-stage::after { top: 68.5% !important; height: 13vh !important; }
+
+  .person-node[data-slot-index="0"],
+  .person-node[data-slot-index="2"],
+  .person-node[data-slot-index="4"] { top: 60.5% !important; }
+
+  .person-node[data-slot-index="1"],
+  .person-node[data-slot-index="3"],
+  .person-node[data-slot-index="5"] { top: 74.8% !important; }
+}
+
+
+/* V17: mobile portrait — reduce the empty space between poem and images by about half.
+   Keeps the poem at the top and the controls at the bottom. */
+@media (max-width: 900px) and (orientation: portrait) {
+  .human-fabric-svg {
+    top: 61.8% !important;
+    height: 21vh !important;
+  }
+
+  .gold-network-svg {
+    top: 62.2% !important;
+    height: 16vh !important;
+    opacity: .36 !important;
+  }
+
+  .timeline-stage::before {
+    top: 62% !important;
+    height: 21vh !important;
+  }
+
+  .timeline-stage::after {
+    top: 62.4% !important;
+    height: 15vh !important;
+  }
+
+  .person-node[data-slot-index="0"],
+  .person-node[data-slot-index="2"],
+  .person-node[data-slot-index="4"] {
+    top: 53.8% !important;
+  }
+
+  .person-node[data-slot-index="1"],
+  .person-node[data-slot-index="3"],
+  .person-node[data-slot-index="5"] {
+    top: 68.8% !important;
+  }
+
+  .person-node[data-slot-index="6"],
+  .person-node[data-slot-index="7"] {
+    top: 74.5% !important;
+  }
+}
+
+@media (max-width: 900px) and (orientation: portrait) and (max-height: 740px) {
+  .human-fabric-svg {
+    top: 61% !important;
+    height: 20vh !important;
+  }
+
+  .gold-network-svg {
+    top: 61.4% !important;
+    height: 15vh !important;
+  }
+
+  .timeline-stage::before {
+    top: 61.2% !important;
+    height: 20vh !important;
+  }
+
+  .timeline-stage::after {
+    top: 61.6% !important;
+    height: 14vh !important;
+  }
+
+  .person-node[data-slot-index="0"],
+  .person-node[data-slot-index="2"],
+  .person-node[data-slot-index="4"] {
+    top: 52.6% !important;
+  }
+
+  .person-node[data-slot-index="1"],
+  .person-node[data-slot-index="3"],
+  .person-node[data-slot-index="5"] {
+    top: 67.2% !important;
+  }
+}

@@ -18,12 +18,12 @@ const DESKTOP_POINTS = [
 ];
 
 const MOBILE_POINTS = [
-  { x: 14, y: 60, side: "top", size: .68 },
-  { x: 28, y: 81, side: "bottom", size: .64 },
-  { x: 42, y: 60, side: "top", size: .68 },
-  { x: 56, y: 81, side: "bottom", size: .64 },
-  { x: 70, y: 60, side: "top", size: .68 },
-  { x: 84, y: 81, side: "bottom", size: .64 },
+  { x: 18, y: 53.8, side: "top", size: .64 },
+  { x: 18, y: 68.8, side: "bottom", size: .60 },
+  { x: 50, y: 53.8, side: "top", size: .64 },
+  { x: 50, y: 68.8, side: "bottom", size: .60 },
+  { x: 82, y: 53.8, side: "top", size: .64 },
+  { x: 82, y: 68.8, side: "bottom", size: .60 },
 ];
 
 const state = {
@@ -157,7 +157,7 @@ function sortPeople(a, b) {
 }
 
 function points() {
-  return window.matchMedia("(max-width: 760px)").matches ? MOBILE_POINTS : DESKTOP_POINTS;
+  return window.matchMedia("(max-width: 900px) and (orientation: portrait)").matches ? MOBILE_POINTS : DESKTOP_POINTS;
 }
 
 function visibleCount() {

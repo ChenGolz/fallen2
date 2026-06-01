@@ -90,3 +90,16 @@ V13:
 - portraits moved slightly closer into the tissue
 - tissue/strand look softened and made airier
 - poem line spacing increased
+
+
+V14:
+- Improved mobile portrait layout: 3+3 portrait grid, tissue moved up, less blank space.
+- Mobile toolbar made readable with two rows.
+- Added mobile modal/image safeguards to prevent image/text overlap.
+- JS now treats portrait screens up to 900px as mobile.
+
+
+V17:
+- Mobile portrait only: reduced the empty space between the poem and portraits/tissue.
+- The poem stays at the top.
+- Bottom controls stay at the bottom.
