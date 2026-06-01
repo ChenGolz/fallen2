@@ -502,6 +502,9 @@ function personMentionsOther(person, other) {
 function isDirectFamilyBond(a, b) {
   if (!a || !b || a.id === b.id) return false;
 
+  if (Array.isArray(a.relatedIds) && a.relatedIds.includes(b.id)) return true;
+  if (Array.isArray(b.relatedIds) && b.relatedIds.includes(a.id)) return true;
+
   if (a.familyGroupId && b.familyGroupId && a.familyGroupId === b.familyGroupId) return true;
 
   if (personMentionsOther(a, b) || personMentionsOther(b, a)) return true;
@@ -896,6 +899,11 @@ function familyGroupSection(person) {
         alt: person.familyGroupTitle || "תמונה משפחתית",
         loading: "lazy",
         decoding: "async",
+        onerror: (event) => {
+          const wrap = event.currentTarget.closest(".family-group-image-wrap");
+          if (wrap) wrap.classList.add("is-missing");
+          event.currentTarget.remove();
+        },
       })
     ),
     el("div", { class: "family-group-copy" },
