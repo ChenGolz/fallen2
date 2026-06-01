@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="שביל זיכרון — אתר הנצחה אישי עם קו פעימות לב, דיוקנאות וסיפורי חיים." />
+  <meta name="theme-color" content="#06131f" />
+  <title>רקמה אנושית אחת חיה</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <a class="skip-link" href="#memory-stage">דילוג לשביל הזיכרון</a>
+  <div id="sr-announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+  <main id="memory-stage" class="memory-stage" aria-label="שביל זיכרון">
+    <div class="mist" aria-hidden="true"></div>
+    <div class="grain" aria-hidden="true"></div>
+
+    <header class="top-bar" aria-label="חיפוש ושליטה">
+      <div class="controls" aria-label="שליטה בציר הזיכרון">
+        <button id="prev-btn" class="ghost-btn" type="button" aria-label="השם הקודם">← הקודם</button>
+        <button id="pause-btn" class="ghost-btn" type="button" aria-pressed="false">
+          <span class="icon" aria-hidden="true">Ⅱ</span>השהיה
+        </button>
+        <button id="next-btn" class="ghost-btn" type="button" aria-label="השם הבא">הבא →</button>
+      </div>
+
+      <label class="search-box">
+        <span aria-hidden="true">⌕</span>
+        <span class="sr-only">חיפוש לפי שם, יישוב, גיל או סיפור</span>
+        <input id="search-input" type="search" placeholder="חיפוש שם…" autocomplete="off" />
+      </label>
+
+      <label class="filter-box" aria-label="סינון סיפורים">
+        <span class="sr-only">סינון סיפורים</span>
+        <select id="story-filter">
+          <option>סינון סיפורים</option>
+          <option>לפי יישוב</option>
+          <option>לפי גיל</option>
+          <option>כיתת כוננות</option>
+        </select>
+      </label>
+    </header>
+
+    <section class="hero-title hero-poem" aria-label="שיר הזיכרון">
+      <div class="poem-panel">
+        <p>
+          <span>כולנו רקמה אנושית אחת חיה</span>
+          <span class="single-line">ואם אחד מאיתנו הולך מעמנו</span>
+          <span>משהו מת בנו -</span>
+          <span>ומשהו, נשאר איתו</span>
+        </p>
+      </div>
+    </section>
+
+    <section class="timeline-stage" aria-label="ציר פעימות הזיכרון">
+
+      <svg class="human-fabric-svg" viewBox="0 0 1200 420" preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="fabricGold" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#4c3519" stop-opacity=".00" />
+            <stop offset="10%" stop-color="#b9914a" stop-opacity=".42" />
+            <stop offset="48%" stop-color="#fff3b9" stop-opacity=".94" />
+            <stop offset="90%" stop-color="#b9914a" stop-opacity=".42" />
+            <stop offset="100%" stop-color="#4c3519" stop-opacity=".00" />
+          </linearGradient>
+          <filter id="fabricGlow" x="-18%" y="-48%" width="136%" height="196%">
+            <feGaussianBlur stdDeviation="2.15" result="blur"/>
+            <feMerge>
+              <feMergeNode in="blur"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+        </defs>
+
+        <g class="fabric-threads" filter="url(#fabricGlow)">
+          <!-- reference-like horizontal strands -->
+          <path d="M0 188 C145 176 280 199 420 188 S690 176 1200 188" />
+          <path d="M0 206 C150 194 290 218 435 207 S710 193 1200 206" />
+          <path d="M0 224 C155 212 305 236 455 225 S730 210 1200 224" />
+          <path d="M0 242 C160 230 318 254 470 242 S755 228 1200 242" />
+          <path d="M0 260 C170 248 335 272 492 260 S785 247 1200 260" />
+          <path d="M0 280 C185 268 360 292 528 280 S825 268 1200 280" />
+
+          <!-- curved crossing tissue strands -->
+          <path d="M0 202 C130 118 252 326 375 174 S585 110 720 284 S964 326 1200 205" />
+          <path d="M0 272 C140 348 258 132 392 300 S620 340 780 160 S1012 112 1200 270" />
+          <path d="M38 176 C205 300 320 145 480 278 S742 312 902 142 S1082 176 1200 235" />
+          <path d="M28 306 C205 185 350 310 522 186 S812 162 990 302 S1138 306 1200 248" />
+          <path d="M96 154 C258 268 394 168 560 258 S832 178 1030 268 S1148 238 1200 210" />
+          <path d="M112 322 C280 220 442 304 620 216 S890 292 1060 206 S1160 214 1200 230" />
+          <path d="M160 160 C315 256 466 156 626 252 S884 160 1080 248" />
+          <path d="M150 308 C322 206 482 294 658 206 S918 290 1110 198" />
+          <path d="M0 226 C220 284 368 180 558 236 S884 292 1200 226" />
+          <path d="M0 258 C214 202 386 298 570 244 S900 190 1200 258" />
+          <path d="M0 236 C186 158 365 304 566 180 S916 304 1200 236" />
+          <path d="M0 250 C180 324 376 168 594 292 S940 164 1200 250" />
+        </g>
+      </svg>
+
+
+
+
+      <svg class="gold-network-svg" viewBox="0 0 1200 360" preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="goldThread" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#6f5127" stop-opacity=".08" />
+            <stop offset="18%" stop-color="#d6b76a" stop-opacity=".62" />
+            <stop offset="50%" stop-color="#fff2b8" stop-opacity=".96" />
+            <stop offset="82%" stop-color="#d6b76a" stop-opacity=".62" />
+            <stop offset="100%" stop-color="#6f5127" stop-opacity=".08" />
+          </linearGradient>
+          <radialGradient id="goldNode" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#fff8cf" stop-opacity="1" />
+            <stop offset="45%" stop-color="#f1ca72" stop-opacity=".78" />
+            <stop offset="100%" stop-color="#8e642b" stop-opacity="0" />
+          </radialGradient>
+          <filter id="goldGlow" x="-20%" y="-60%" width="140%" height="220%">
+            <feGaussianBlur stdDeviation="3.2" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+        <g class="threads" filter="url(#goldGlow)">
+          <path d="M0 166 C125 154 220 177 325 166 S545 154 650 169 S930 181 1200 167" />
+          <path d="M0 188 C140 176 235 198 338 188 S545 176 655 192 S930 203 1200 189" />
+          <path d="M0 210 C135 198 238 220 350 209 S560 197 670 212 S945 224 1200 210" />
+          <path d="M0 231 C150 220 252 241 360 230 S585 219 695 233 S960 245 1200 232" />
+          <path d="M0 250 C160 240 270 258 390 247 S620 238 735 252 S990 263 1200 250" />
+          <path d="M20 222 C155 126 295 268 450 154 S760 257 935 146 S1115 217 1200 186" />
+          <path d="M0 176 C150 252 295 125 455 236 S750 132 930 230 S1095 184 1200 212" />
+          <path d="M54 246 C215 144 345 247 515 160 S794 242 1010 154 S1146 204 1200 194" />
+          <path d="M0 196 C185 142 320 216 500 182 S790 163 1040 196 S1148 188 1200 182" />
+          <path d="M88 160 C250 234 420 145 605 226 S905 153 1140 220" />
+          <path d="M110 236 C298 156 465 230 648 170 S910 222 1168 168" />
+        </g>
+        <g class="thread-dots">
+          <circle cx="72" cy="166" r="3.8"/>
+          <circle cx="212" cy="188" r="3.1"/>
+          <circle cx="338" cy="210" r="3.0"/>
+          <circle cx="492" cy="186" r="4.0"/>
+          <circle cx="648" cy="210" r="3.6"/>
+          <circle cx="802" cy="188" r="3.2"/>
+          <circle cx="948" cy="210" r="3.5"/>
+          <circle cx="1110" cy="190" r="3.2"/>
+        </g>
+      </svg>
+
+      <svg class="heartbeat-svg" viewBox="0 0 1200 360" preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#6bdcff" stop-opacity=".18" />
+            <stop offset="18%" stop-color="#91eaff" stop-opacity=".72" />
+            <stop offset="50%" stop-color="#f2fcff" stop-opacity="1" />
+            <stop offset="82%" stop-color="#91eaff" stop-opacity=".72" />
+            <stop offset="100%" stop-color="#6bdcff" stop-opacity=".18" />
+          </linearGradient>
+          <linearGradient id="heartGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#99e7ff" stop-opacity=".28" />
+            <stop offset="50%" stop-color="#e8fbff" stop-opacity=".40" />
+            <stop offset="100%" stop-color="#69cdff" stop-opacity=".24" />
+          </linearGradient>
+          <filter id="lineGlow" x="-12%" y="-90%" width="124%" height="280%">
+            <feGaussianBlur stdDeviation="4" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <filter id="heartGlow" x="-40%" y="-40%" width="180%" height="200%">
+            <feGaussianBlur stdDeviation="6" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+
+        <path class="line-shadow" d="M20 180 L156 180 L174 180 L194 148 L216 216 L238 180 L316 180 L338 180 L362 160 L386 196 L410 180 L506 180 L526 180 L548 158 L570 200 L592 180 L610 180 L628 162 L650 200 L672 180 L790 180 L812 180 L834 158 L856 196 L880 180 L982 180 L1000 180 L1022 148 L1044 216 L1066 180 L1142 180 L1160 180 L1180 180" />
+        <g class="broken-heart" aria-hidden="true">
+          <path class="heart-outline" d="M610 228 C565 195,520 162,520 122 C520 86,550 62,583 62 C604 62,622 72,636 92" />
+          <path class="heart-outline" d="M610 228 C655 195,700 162,700 122 C700 86,670 62,637 62 C616 62,598 72,584 92" />
+          <path class="heart-crack" d="M609 94 L622 114 L606 138 L620 160 L602 182 L610 228" />
+        </g>
+        <path class="line-base" d="M20 180 L156 180 L174 180 L194 148 L216 216 L238 180 L316 180 L338 180 L362 160 L386 196 L410 180 L506 180 L526 180 L548 158 L570 200 L592 180 L610 180 L628 162 L650 200 L672 180 L790 180 L812 180 L834 158 L856 196 L880 180 L982 180 L1000 180 L1022 148 L1044 216 L1066 180 L1142 180 L1160 180 L1180 180" />
+        <path id="path-fill" class="line-fill" d="M20 180 L156 180 L174 180 L194 148 L216 216 L238 180 L316 180 L338 180 L362 160 L386 196 L410 180 L506 180 L526 180 L548 158 L570 200 L592 180 L610 180 L628 162 L650 200 L672 180 L790 180 L812 180 L834 158 L856 196 L880 180 L982 180 L1000 180 L1022 148 L1044 216 L1066 180 L1142 180 L1160 180 L1180 180" />
+        <path class="line-runner-glow" d="M20 180 L156 180 L174 180 L194 148 L216 216 L238 180 L316 180 L338 180 L362 160 L386 196 L410 180 L506 180 L526 180 L548 158 L570 200 L592 180 L610 180 L628 162 L650 200 L672 180 L790 180 L812 180 L834 158 L856 196 L880 180 L982 180 L1000 180 L1022 148 L1044 216 L1066 180 L1142 180 L1160 180 L1180 180" />
+        <path class="line-runner" d="M20 180 L156 180 L174 180 L194 148 L216 216 L238 180 L316 180 L338 180 L362 160 L386 196 L410 180 L506 180 L526 180 L548 158 L570 200 L592 180 L610 180 L628 162 L650 200 L672 180 L790 180 L812 180 L834 158 L856 196 L880 180 L982 180 L1000 180 L1022 148 L1044 216 L1066 180 L1142 180 L1160 180 L1180 180" />
+      </svg>
+
+      <div id="timeline-layer" class="timeline-layer"></div>
+    </section>
+  </main>
+
+  <div id="story-root"></div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

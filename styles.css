@@ -1,0 +1,3142 @@
+:root {
+  --bg-1: #020b17;
+  --bg-2: #081c33;
+  --bg-3: #112a44;
+  --gold-1: #fff0c2;
+  --gold-2: #e7c36f;
+  --gold-3: #a87b37;
+  --gold-4: #6b461c;
+  --ink: #f7edd1;
+  --ink-soft: #decfa4;
+  --panel: rgba(15, 16, 19, 0.74);
+  --panel-2: rgba(31, 24, 18, 0.86);
+  --shadow: 0 20px 55px rgba(0,0,0,.46);
+  font-family: "Assistant", system-ui, sans-serif;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { min-height: 100%; }
+body {
+  margin: 0;
+  overflow: hidden;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 50% 44%, rgba(47, 79, 121, .34), transparent 22rem),
+    radial-gradient(circle at 18% 28%, rgba(19, 50, 85, .24), transparent 24rem),
+    radial-gradient(circle at 84% 70%, rgba(18, 52, 92, .18), transparent 24rem),
+    linear-gradient(180deg, #010912 0%, #041324 48%, #03101d 100%);
+  font-family: "Assistant", system-ui, sans-serif;
+}
+button, input, select { font: inherit; }
+button { cursor: pointer; }
+img { display: block; max-width: 100%; }
+
+.skip-link {
+  position: fixed;
+  top: .75rem;
+  inset-inline-start: .75rem;
+  transform: translateY(-200%);
+  padding: .65rem .9rem;
+  background: #fff;
+  color: #000;
+  border-radius: 999px;
+  z-index: 9999;
+}
+.skip-link:focus { transform: translateY(0); }
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.memory-stage {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.mist, .grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.mist {
+  z-index: -2;
+  background:
+    radial-gradient(circle at 50% 47%, rgba(255, 226, 163, .08), transparent 17rem),
+    radial-gradient(circle at 50% 60%, rgba(86, 121, 175, .12), transparent 30rem);
+  filter: blur(16px);
+}
+.grain {
+  z-index: -1;
+  opacity: .32;
+  background-image:
+    radial-gradient(circle at 10% 18%, rgba(255,255,255,.42) 0 1px, transparent 1.2px),
+    radial-gradient(circle at 72% 36%, rgba(255,219,141,.34) 0 1px, transparent 1.4px),
+    radial-gradient(circle at 88% 12%, rgba(255,255,255,.22) 0 1px, transparent 1.2px),
+    linear-gradient(135deg, transparent 0 48%, rgba(255,255,255,.018) 49%, transparent 50%),
+    linear-gradient(45deg, transparent 0 48%, rgba(255,255,255,.014) 49%, transparent 50%);
+  background-size: 8rem 8rem, 10rem 10rem, 9rem 9rem, 2.2rem 2.2rem, 2.8rem 2.8rem;
+}
+
+/* bottom controls, closer to the reference */
+.top-bar {
+  position: fixed;
+  inset-inline: 1.7rem;
+  bottom: 1.1rem;
+  z-index: 120;
+  display: grid;
+  grid-template-columns: minmax(18rem, 25rem) minmax(11rem, 13rem) auto;
+  align-items: center;
+  gap: 1rem;
+  pointer-events: none;
+  direction: ltr;
+}
+.top-bar > * { pointer-events: auto; }
+.search-box, .filter-box select, .ghost-btn {
+  border: 1px solid rgba(223, 184, 99, .55);
+  color: var(--ink-soft);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255,230,161,.08), transparent 60%),
+    linear-gradient(180deg, rgba(42, 30, 20, .95), rgba(17, 14, 14, .95));
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 245, 201, .08),
+    0 0 0 1px rgba(83, 56, 24, .8),
+    0 10px 24px rgba(0,0,0,.34);
+}
+.search-box {
+  order: 1;
+  justify-self: start;
+  direction: rtl;
+  display: flex;
+  align-items: center;
+  gap: .8rem;
+  width: min(100%, 25rem);
+  padding: .65rem 1rem;
+  border-radius: 999px;
+}
+.search-box input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #f2e5bb;
+  font-size: 1.02rem;
+}
+.search-box input::placeholder { color: rgba(242, 229, 187, .72); }
+.filter-box { order: 2; justify-self: center; }
+.filter-box select {
+  min-width: 11.5rem;
+  padding: .72rem 1rem;
+  border-radius: 999px;
+  appearance: none;
+  -webkit-appearance: none;
+  outline: 0;
+}
+.controls {
+  order: 3;
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+  direction: rtl;
+}
+.ghost-btn {
+  min-width: 4.8rem;
+  padding: .74rem 1rem;
+  border-radius: 1rem;
+  font-weight: 800;
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+.ghost-btn:hover,
+.ghost-btn:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(255, 222, 140, .88);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 245, 201, .12),
+    0 0 0 1px rgba(83, 56, 24, .8),
+    0 0 26px rgba(255, 202, 96, .18),
+    0 14px 28px rgba(0,0,0,.38);
+}
+#pause-btn {
+  min-width: 3.4rem;
+  padding-inline: .9rem;
+}
+#pause-btn .icon { margin-inline-start: .2rem; }
+
+/* poem frame */
+.hero-title {
+  position: fixed;
+  top: 4.2rem;
+  inset-inline: 1rem;
+  z-index: 90;
+  display: grid;
+  justify-items: center;
+  pointer-events: none;
+}
+.hero-title h1,
+.hero-title > p:not(.force-visible),
+.title-ornament { display: none !important; }
+.hero-poem .poem-panel {
+  position: relative;
+  width: min(48rem, 84vw);
+  min-height: 9.6rem;
+  padding: 1.15rem 2rem 1.1rem;
+  border-radius: 1.65rem;
+  background:
+    radial-gradient(circle at 50% 55%, rgba(183, 150, 94, .15), transparent 45%),
+    linear-gradient(135deg, rgba(78, 64, 45, .22), transparent 34%),
+    linear-gradient(-135deg, rgba(78, 64, 45, .22), transparent 34%),
+    linear-gradient(180deg, rgba(46, 36, 26, .92), rgba(24, 22, 20, .94));
+  border: 2px solid rgba(229, 186, 92, .72);
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 236, 183, .08),
+    0 0 0 1px rgba(90, 60, 28, .95),
+    0 0 30px rgba(255, 209, 99, .22),
+    0 18px 40px rgba(0,0,0,.48);
+  overflow: visible;
+}
+.hero-poem .poem-panel::before {
+  content: "♡";
+  position: absolute;
+  left: 50%;
+  top: -1.05rem;
+  transform: translateX(-50%);
+  width: 2.65rem;
+  height: 2.65rem;
+  display: grid;
+  place-items: center;
+  font-size: 1.4rem;
+  color: var(--gold-1);
+  border-radius: 999px;
+  border: 1px solid rgba(233, 193, 103, .82);
+  background: linear-gradient(180deg, #5f4728, #2b2117);
+  box-shadow: 0 0 18px rgba(255, 205, 92, .2);
+}
+.hero-poem .poem-panel::after {
+  content: "";
+  position: absolute;
+  inset: .5rem;
+  border-radius: 1.25rem;
+  border: 1px solid rgba(247, 225, 166, .14);
+  pointer-events: none;
+}
+.hero-poem .poem-panel p {
+  margin: 0;
+  display: grid;
+  justify-items: center;
+  gap: .18rem;
+  text-align: center;
+  color: var(--ink);
+  font-size: clamp(1.2rem, 1.65vw, 1.55rem);
+  line-height: 1.34;
+  text-shadow: 0 1px 2px rgba(0,0,0,.45);
+}
+.hero-poem .poem-panel span.single-line {
+  color: #fff0be;
+  font-weight: 800;
+}
+/* decorative corner threads */
+.hero-poem .poem-panel .corner,
+.hero-poem .poem-panel .corner2 { display:none; }
+.hero-poem .poem-panel:has(p)::selection { background: rgba(255,255,255,.15); }
+.hero-poem .poem-panel {
+  background-image:
+    linear-gradient(180deg, rgba(64, 50, 36, .92), rgba(23, 20, 19, .96)),
+    repeating-linear-gradient(135deg, transparent 0 16px, rgba(255,230,165,.04) 16px 18px, transparent 18px 34px),
+    repeating-linear-gradient(-135deg, transparent 0 16px, rgba(255,230,165,.03) 16px 18px, transparent 18px 34px);
+}
+.hero-poem .poem-panel > p::before,
+.hero-poem .poem-panel > p::after {
+  content: "";
+  position: absolute;
+  top: .6rem;
+  bottom: .6rem;
+  width: 7rem;
+  pointer-events: none;
+  opacity: .62;
+  background:
+    linear-gradient(135deg, transparent 0 40%, rgba(239, 208, 129, .85) 41%, transparent 42%),
+    linear-gradient(45deg, transparent 0 40%, rgba(239, 208, 129, .85) 41%, transparent 42%),
+    linear-gradient(135deg, transparent 0 53%, rgba(239, 208, 129, .55) 54%, transparent 55%),
+    linear-gradient(45deg, transparent 0 53%, rgba(239, 208, 129, .55) 54%, transparent 55%);
+  background-size: 100% 100%, 100% 100%, 78% 78%, 78% 78%;
+}
+.hero-poem .poem-panel > p::before { right: .8rem; transform: scaleX(-1); }
+.hero-poem .poem-panel > p::after { left: .8rem; }
+
+/* stage */
+.timeline-stage {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+.heartbeat-svg { display: none; }
+.gold-network-svg {
+  position: absolute;
+  inset-inline: 0;
+  top: 34.5vh;
+  width: 100%;
+  height: 37vh;
+  z-index: 3;
+  opacity: .98;
+  pointer-events: none;
+}
+.gold-network-svg .threads path {
+  fill: none;
+  stroke: url(#goldThread);
+  stroke-width: 1.15;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: .82;
+  filter:
+    drop-shadow(0 0 4px rgba(255, 221, 132, .38))
+    drop-shadow(0 0 12px rgba(255, 200, 88, .2));
+  animation: gold-pulse 7s ease-in-out infinite alternate;
+}
+.gold-network-svg .threads path:nth-child(2n) { opacity: .68; animation-delay: .7s; }
+.gold-network-svg .threads path:nth-child(3n) { opacity: .58; animation-delay: 1.4s; }
+.gold-network-svg .thread-dots circle {
+  fill: url(#goldNode);
+  filter: drop-shadow(0 0 9px rgba(255, 220, 132, .65));
+  opacity: .88;
+}
+@keyframes gold-pulse {
+  from { stroke-dasharray: 8 0; }
+  to { stroke-dasharray: 10 0; }
+}
+
+.timeline-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+}
+.person-node {
+  position: absolute;
+  width: var(--node-w, 8rem);
+  translate: 50% -50%;
+  opacity: 0;
+  transform: translateY(.8rem) scale(.9);
+  transition: opacity .8s ease, transform 1s cubic-bezier(.2,.9,.25,1), filter .8s ease;
+  filter: blur(4px) drop-shadow(0 18px 30px rgba(0,0,0,.42));
+  will-change: transform, opacity;
+}
+.person-node.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  filter: blur(0) drop-shadow(0 18px 30px rgba(0,0,0,.42));
+}
+.person-node.is-leaving {
+  opacity: 0;
+  transform: translateY(-.6rem) scale(.94);
+  filter: blur(5px) drop-shadow(0 18px 30px rgba(0,0,0,.42));
+}
+.person-node::before { display: none; }
+.person-node::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  width: 3rem;
+  height: 1rem;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 214, 118, .42), rgba(255, 214, 118, .08), transparent 72%);
+  filter: blur(8px);
+  opacity: .75;
+  transform: translateX(-50%);
+}
+.person-node.is-top::after { top: calc(100% + .15rem); }
+.person-node.is-bottom::after { bottom: calc(100% + .15rem); }
+.person-button {
+  width: 100%;
+  display: grid;
+  justify-items: center;
+  gap: .62rem;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+}
+.portrait-frame {
+  position: relative;
+  width: var(--photo-w, 6.65rem);
+  aspect-ratio: 1;
+  border-radius: 999px;
+  padding: .34rem;
+  background:
+    radial-gradient(circle at 40% 18%, rgba(255,249,225,.95), transparent 15%),
+    conic-gradient(from 210deg, #5f421e, #f2d78f, #8b5b24, #ffefb7, #6a461c, #d1a04c, #5f421e);
+  border: 1px solid rgba(255, 226, 146, .68);
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.18),
+    0 0 0 .12rem rgba(69, 46, 21, .92),
+    0 0 0 .22rem rgba(221, 176, 77, .35),
+    0 0 24px rgba(255, 207, 102, .24),
+    0 16px 26px rgba(0,0,0,.34);
+  overflow: hidden;
+}
+.portrait-frame::before {
+  content: "";
+  position: absolute;
+  inset: .45rem;
+  border-radius: inherit;
+  border: 1px solid rgba(255, 239, 188, .28);
+  pointer-events: none;
+}
+.portrait-frame img,
+.portrait-placeholder {
+  width: 100%;
+  height: 100%;
+  border-radius: 999px;
+}
+.portrait-frame img {
+  object-fit: cover;
+  object-position: center 16%;
+  filter: grayscale(1) contrast(1.12) brightness(1.07) sepia(.1) saturate(.18);
+  transform: scale(1.03);
+}
+.portrait-placeholder {
+  display: grid;
+  place-items: center;
+  background: linear-gradient(180deg, rgba(86,73,55,.95), rgba(42,34,24,.95));
+  color: var(--gold-1);
+  font-size: 1.35rem;
+  font-weight: 800;
+}
+.person-name {
+  max-width: 9.2rem;
+  padding: .45rem .75rem .42rem;
+  border-radius: .55rem;
+  color: var(--ink);
+  font-weight: 800;
+  font-size: .94rem;
+  line-height: 1.08;
+  text-align: center;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255,232,158,.15), transparent 55%),
+    linear-gradient(180deg, rgba(101, 74, 37, .96), rgba(47, 35, 23, .94));
+  border: 1px solid rgba(234, 192, 101, .52);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 249, 209, .06),
+    0 0 0 1px rgba(72, 49, 24, .9),
+    0 10px 22px rgba(0,0,0,.32);
+  text-shadow: 0 1px 2px rgba(0,0,0,.6);
+}
+.person-name span { display: block; white-space: nowrap; }
+.person-button:hover .portrait-frame,
+.person-button:focus-visible .portrait-frame {
+  transform: translateY(-2px) scale(1.015);
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.18),
+    0 0 0 .12rem rgba(69, 46, 21, .92),
+    0 0 0 .24rem rgba(239, 196, 104, .48),
+    0 0 28px rgba(255, 208, 104, .34),
+    0 18px 28px rgba(0,0,0,.38);
+}
+
+.empty-state {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  color: var(--ink-soft);
+  padding: 1rem;
+}
+.empty-state h2 { margin: 0 0 .5rem; color: var(--ink); }
+
+/* story card */
+.story-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(0, 7, 14, .74);
+  backdrop-filter: blur(18px);
+}
+.story-panel {
+  position: relative;
+  width: min(72rem, 96vw);
+  max-height: 92vh;
+  overflow: auto;
+  border-radius: 1.8rem;
+  padding-bottom: 1rem;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(255, 223, 144, .14), transparent 15rem),
+    linear-gradient(180deg, rgba(244, 239, 227, .98), rgba(232, 224, 206, .98));
+  color: #1f1b16;
+  border: 1px solid rgba(211, 166, 79, .42);
+  box-shadow: 0 22px 70px rgba(0,0,0,.42);
+}
+.close-story {
+  position: absolute;
+  top: 1rem;
+  inset-inline-end: 1rem;
+  width: 2.6rem;
+  height: 2.6rem;
+  border: 0;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: rgba(255,255,255,.75);
+  color: #251e16;
+  font-size: 1.55rem;
+}
+.story-grid-head {
+  display: grid;
+  grid-template-columns: 16rem 1fr;
+  gap: 1.5rem;
+  padding: 1.35rem 1.35rem 1rem;
+}
+.story-photo {
+  aspect-ratio: 4 / 5;
+  border-radius: 1.4rem;
+  overflow: hidden;
+  background: rgba(0,0,0,.05);
+  border: 1px solid rgba(133, 101, 45, .18);
+}
+.story-photo img {
+  width: 100%; height: 100%; object-fit: cover; object-position: center 15%;
+  filter: grayscale(1) contrast(1.08) brightness(1.05) sepia(.06) saturate(.24);
+}
+.story-copy h2 { margin: .2rem 0 .7rem; font-size: clamp(2rem, 5vw, 3.3rem); line-height: 1.04; color: #16110d; }
+.story-meta { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: .95rem; }
+.story-meta span,
+.story-actions button {
+  padding: .45rem .85rem;
+  border-radius: 999px;
+  border: 1px solid rgba(92, 67, 32, .16);
+  background: rgba(92, 67, 32, .08);
+  color: #5e4826;
+  font-weight: 800;
+}
+.story-copy p {
+  margin: 0;
+  line-height: 1.9;
+  color: #4f4334;
+  font-size: 1.05rem;
+}
+.story-actions { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1rem; }
+.relatives-card,
+.detail {
+  background: rgba(255,255,255,.44);
+  border: 1px solid rgba(109, 84, 43, .12);
+  border-radius: 1rem;
+}
+.relatives-card {
+  margin: 0 1.35rem 1rem;
+  padding: .95rem 1rem;
+}
+.relatives-sentence {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .45rem .55rem;
+  color: #4f4334;
+  line-height: 1.8;
+  font-size: 1rem;
+}
+.relatives-segment { display: inline-flex; align-items: center; gap: .45rem; }
+.relatives-dot { color: #b38a48; font-weight: 800; }
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: .75rem;
+  padding: 0 1.35rem 1rem;
+}
+.detail { padding: .85rem .95rem; }
+.detail strong { display: block; margin-bottom: .2rem; color: #231c13; }
+.detail span { color: #5f5141; }
+
+@media (max-width: 900px) {
+  body { overflow-y: auto; }
+  .top-bar {
+    inset-inline: .75rem;
+    bottom: .75rem;
+    grid-template-columns: 1fr;
+    gap: .6rem;
+  }
+  .search-box, .filter-box, .controls {
+    width: 100%;
+    justify-self: stretch;
+  }
+  .filter-box select { width: 100%; }
+  .controls { justify-content: stretch; }
+  .ghost-btn { flex: 1 1 0; min-width: 0; }
+  .hero-title { top: 1.1rem; }
+  .hero-poem .poem-panel {
+    width: min(94vw, 34rem);
+    min-height: auto;
+    padding: 1rem 1rem 1rem;
+  }
+  .hero-poem .poem-panel p {
+    font-size: clamp(.95rem, 2.7vw, 1.15rem);
+    line-height: 1.3;
+  }
+  .hero-poem .poem-panel > p::before,
+  .hero-poem .poem-panel > p::after { display: none; }
+  .gold-network-svg { top: 31vh; height: 43vh; }
+  .portrait-frame { width: var(--photo-w, 5rem); }
+  .person-name { max-width: 7rem; font-size: .72rem; }
+  .story-grid-head { grid-template-columns: 1fr; }
+  .story-photo { max-width: 14rem; }
+  .details-grid { grid-template-columns: 1fr; }
+}
+
+
+/* ==========================================================
+   V2 closer to the original reference image
+   ========================================================== */
+
+/* Make the whole page feel closer to the reference: darker, warmer, less blue */
+body {
+  background:
+    radial-gradient(circle at 50% 43%, rgba(36, 65, 100, .34), transparent 24rem),
+    radial-gradient(circle at 50% 58%, rgba(18, 43, 72, .42), transparent 34rem),
+    radial-gradient(circle at 18% 34%, rgba(9, 27, 50, .38), transparent 24rem),
+    radial-gradient(circle at 82% 70%, rgba(11, 31, 55, .34), transparent 26rem),
+    linear-gradient(180deg, #010813 0%, #06182b 47%, #03111f 100%) !important;
+}
+
+.grain {
+  opacity: .22 !important;
+  background-image:
+    radial-gradient(circle at 10% 18%, rgba(255,255,255,.42) 0 1px, transparent 1.2px),
+    radial-gradient(circle at 72% 36%, rgba(255,219,141,.30) 0 1px, transparent 1.4px),
+    radial-gradient(circle at 88% 12%, rgba(255,255,255,.18) 0 1px, transparent 1.2px),
+    linear-gradient(135deg, transparent 0 48%, rgba(255,255,255,.018) 49%, transparent 50%),
+    linear-gradient(45deg, transparent 0 48%, rgba(255,255,255,.012) 49%, transparent 50%) !important;
+  background-size: 8rem 8rem, 10rem 10rem, 9rem 9rem, 2.2rem 2.2rem, 2.8rem 2.8rem !important;
+}
+
+/* Poem: higher, smaller, and closer to the original plaque proportions */
+.hero-title {
+  top: clamp(.65rem, 1.8vh, 1.15rem) !important;
+  z-index: 90 !important;
+}
+
+.hero-poem .poem-panel {
+  width: min(41rem, 74vw) !important;
+  min-height: 7.55rem !important;
+  padding: 1rem 1.45rem .92rem !important;
+  border-radius: 1.35rem !important;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(214, 178, 103, .12), transparent 52%),
+    linear-gradient(180deg, rgba(54, 44, 33, .90), rgba(24, 22, 20, .94)) !important;
+  border: 1.5px solid rgba(226, 183, 90, .70) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 239, 188, .10),
+    inset 0 0 28px rgba(0,0,0,.42),
+    0 0 0 1px rgba(82, 54, 24, .90),
+    0 0 24px rgba(255, 205, 101, .20),
+    0 14px 36px rgba(0,0,0,.46) !important;
+}
+
+/* Smaller heart medallion like the reference */
+.hero-poem .poem-panel::before {
+  top: -.82rem !important;
+  width: 2.18rem !important;
+  height: 2.18rem !important;
+  font-size: 1.18rem !important;
+  border-color: rgba(229, 189, 100, .74) !important;
+}
+
+/* inner border, softer */
+.hero-poem .poem-panel::after {
+  inset: .55rem !important;
+  border-radius: 1rem !important;
+  border-color: rgba(247, 225, 166, .11) !important;
+}
+
+/* Replace the large X-like corner marks with delicate reference-like threads */
+.hero-poem .poem-panel > p::before,
+.hero-poem .poem-panel > p::after {
+  top: .72rem !important;
+  bottom: .72rem !important;
+  width: 5.2rem !important;
+  opacity: .50 !important;
+  background:
+    linear-gradient(42deg, transparent 0 41%, rgba(238, 204, 125, .70) 42%, transparent 43%),
+    linear-gradient(-42deg, transparent 0 43%, rgba(238, 204, 125, .48) 44%, transparent 45%),
+    linear-gradient(42deg, transparent 0 57%, rgba(238, 204, 125, .38) 58%, transparent 59%),
+    linear-gradient(-42deg, transparent 0 60%, rgba(238, 204, 125, .28) 61%, transparent 62%) !important;
+  background-size: 92% 92%, 92% 92%, 72% 72%, 72% 72% !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+}
+
+.hero-poem .poem-panel > p::before {
+  right: .8rem !important;
+  left: auto !important;
+  transform: none !important;
+}
+
+.hero-poem .poem-panel > p::after {
+  left: .8rem !important;
+  right: auto !important;
+  transform: scaleX(-1) !important;
+}
+
+.hero-poem .poem-panel p {
+  font-size: clamp(1rem, 1.35vw, 1.28rem) !important;
+  line-height: 1.28 !important;
+  gap: .09rem !important;
+  color: #efe2bd !important;
+}
+
+.hero-poem .poem-panel span.single-line {
+  color: #fff0bd !important;
+  font-size: 1.05em !important;
+  font-weight: 850 !important;
+}
+
+/* Move memory network slightly down so portraits no longer sit behind the poem */
+.gold-network-svg {
+  top: 32.8vh !important;
+  height: 40vh !important;
+  opacity: 1 !important;
+}
+
+.gold-network-svg .threads path {
+  stroke-width: 1.22 !important;
+  opacity: .78 !important;
+  filter:
+    drop-shadow(0 0 4px rgba(255, 225, 145, .48))
+    drop-shadow(0 0 13px rgba(255, 198, 85, .23)) !important;
+}
+
+.gold-network-svg .threads path:nth-child(2n) {
+  opacity: .66 !important;
+}
+
+.gold-network-svg .threads path:nth-child(3n) {
+  opacity: .58 !important;
+}
+
+/* Portrait medallions: a little smaller, warmer, and closer to reference */
+.portrait-frame {
+  width: var(--photo-w, 5.95rem) !important;
+  padding: .30rem !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.16),
+    0 0 0 .10rem rgba(69, 46, 21, .92),
+    0 0 0 .19rem rgba(221, 176, 77, .35),
+    0 0 22px rgba(255, 207, 102, .22),
+    0 14px 24px rgba(0,0,0,.34) !important;
+}
+
+.portrait-frame::before {
+  inset: .39rem !important;
+}
+
+.portrait-frame img {
+  filter: grayscale(1) contrast(1.12) brightness(1.05) sepia(.11) saturate(.16) !important;
+  transform: scale(1.025) !important;
+}
+
+/* Name plaques: closer to reference, slightly squarer and compact */
+.person-name {
+  margin-top: .36rem !important;
+  max-width: 8.3rem !important;
+  padding: .40rem .68rem .38rem !important;
+  border-radius: .45rem !important;
+  font-size: clamp(.72rem, .84vw, .88rem) !important;
+  line-height: 1.08 !important;
+}
+
+/* More reference-like vertical placement */
+.person-node {
+  width: var(--node-w, 7.3rem) !important;
+}
+
+.person-node.is-top {
+  transform-origin: center bottom;
+}
+
+.person-node.is-bottom {
+  transform-origin: center top;
+}
+
+/* Bottom controls: keep low, compact, and aligned like the reference */
+.top-bar {
+  inset-inline: 2rem !important;
+  bottom: 1rem !important;
+  grid-template-columns: minmax(17rem, 25rem) minmax(10rem, 12.5rem) auto !important;
+  gap: .9rem !important;
+}
+
+.search-box {
+  padding: .58rem .9rem !important;
+  height: 3.05rem !important;
+}
+
+.filter-box select {
+  height: 3.05rem !important;
+  padding: .58rem 1rem !important;
+}
+
+.ghost-btn {
+  height: 3.05rem !important;
+  padding: .58rem .9rem !important;
+  min-width: 4.45rem !important;
+}
+
+/* Story modal remains readable but with the same warmer art deco feel */
+.story-panel {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(255, 223, 144, .13), transparent 15rem),
+    linear-gradient(180deg, rgba(245, 240, 230, .98), rgba(233, 225, 209, .98)) !important;
+}
+
+@media (max-width: 900px) {
+  .hero-title {
+    top: .75rem !important;
+  }
+
+  .hero-poem .poem-panel {
+    width: min(92vw, 34rem) !important;
+    min-height: auto !important;
+    padding: .95rem .9rem .88rem !important;
+  }
+
+  .hero-poem .poem-panel p {
+    font-size: clamp(.88rem, 2.5vw, 1.05rem) !important;
+    line-height: 1.28 !important;
+  }
+
+  .hero-poem .poem-panel > p::before,
+  .hero-poem .poem-panel > p::after {
+    display: none !important;
+  }
+
+  .gold-network-svg {
+    top: 31vh !important;
+    height: 42vh !important;
+  }
+
+  .top-bar {
+    inset-inline: .75rem !important;
+    bottom: .75rem !important;
+    grid-template-columns: 1fr !important;
+  }
+
+  .portrait-frame {
+    width: var(--photo-w, 4.65rem) !important;
+  }
+
+  .person-name {
+    max-width: 6.8rem !important;
+    font-size: .66rem !important;
+  }
+}
+
+
+/* ==========================================================
+   V3: woven "fabric/tissue" closer to the reference image
+   ========================================================== */
+
+/* Add a central woven fabric texture behind the gold network */
+.timeline-stage {
+  position: relative;
+  isolation: isolate;
+}
+
+.timeline-stage::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 41%;
+  width: min(78vw, 62rem);
+  height: min(35vh, 22rem);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 0;
+  opacity: .42;
+  border-radius: 50%;
+  background:
+    linear-gradient(55deg,
+      transparent 0 7%,
+      rgba(192, 167, 108, .15) 7.5%,
+      rgba(43, 55, 72, .32) 11%,
+      transparent 14%,
+      transparent 21%,
+      rgba(192, 167, 108, .12) 21.5%,
+      rgba(45, 57, 75, .28) 25%,
+      transparent 28%,
+      transparent 35%,
+      rgba(192, 167, 108, .10) 35.5%,
+      rgba(43, 55, 72, .22) 39%,
+      transparent 42%,
+      transparent 49%,
+      rgba(192, 167, 108, .10) 49.5%,
+      rgba(43, 55, 72, .20) 53%,
+      transparent 56%,
+      transparent 63%,
+      rgba(192, 167, 108, .08) 63.5%,
+      rgba(43, 55, 72, .18) 67%,
+      transparent 70%,
+      transparent 100%),
+    linear-gradient(-55deg,
+      transparent 0 8%,
+      rgba(192, 167, 108, .12) 8.5%,
+      rgba(43, 55, 72, .28) 12%,
+      transparent 15%,
+      transparent 22%,
+      rgba(192, 167, 108, .11) 22.5%,
+      rgba(45, 57, 75, .24) 26%,
+      transparent 29%,
+      transparent 36%,
+      rgba(192, 167, 108, .10) 36.5%,
+      rgba(43, 55, 72, .20) 40%,
+      transparent 43%,
+      transparent 50%,
+      rgba(192, 167, 108, .08) 50.5%,
+      rgba(43, 55, 72, .18) 54%,
+      transparent 57%,
+      transparent 64%,
+      rgba(192, 167, 108, .08) 64.5%,
+      rgba(43, 55, 72, .16) 68%,
+      transparent 71%,
+      transparent 100%),
+    radial-gradient(circle at 50% 50%, rgba(229, 195, 111, .06), rgba(2, 10, 20, 0) 68%);
+  background-size: 11.5rem 11.5rem, 11.5rem 11.5rem, cover;
+  background-position: center;
+  filter: blur(.2px);
+  box-shadow:
+    inset 0 0 2.5rem rgba(0,0,0,.34),
+    0 0 7rem rgba(10, 32, 56, .32);
+  mask-image: radial-gradient(circle at 50% 50%, rgba(0,0,0,1) 0 42%, rgba(0,0,0,.72) 58%, rgba(0,0,0,0) 84%);
+  -webkit-mask-image: radial-gradient(circle at 50% 50%, rgba(0,0,0,1) 0 42%, rgba(0,0,0,.72) 58%, rgba(0,0,0,0) 84%);
+}
+
+.timeline-stage::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 44%;
+  width: min(74vw, 58rem);
+  height: min(29vh, 18rem);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 0;
+  border-radius: 50%;
+  opacity: .24;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255, 230, 165, .16), transparent 52%),
+    radial-gradient(circle at 50% 50%, rgba(46, 86, 125, .28), transparent 76%);
+  filter: blur(20px);
+}
+
+/* Keep actual thread paths above the woven texture */
+.gold-network-svg,
+.heartbeat-svg,
+.timeline-layer {
+  position: relative;
+  z-index: 1;
+}
+
+/* Make the thread network feel more like delicate glowing strands */
+.gold-network-svg {
+  top: 33.3vh !important;
+}
+
+.gold-network-svg .threads path {
+  stroke-width: 1.08 !important;
+  stroke-linecap: round !important;
+  opacity: .82 !important;
+  filter:
+    drop-shadow(0 0 3px rgba(255, 233, 166, .42))
+    drop-shadow(0 0 10px rgba(247, 194, 84, .18)) !important;
+}
+
+.gold-network-svg .threads path:nth-child(2n) {
+  opacity: .69 !important;
+}
+
+.gold-network-svg .threads path:nth-child(3n) {
+  opacity: .58 !important;
+}
+
+/* Plaque interior texture a little more like the reference smoky-marbled material */
+.hero-poem .poem-panel {
+  background:
+    radial-gradient(circle at 23% 42%, rgba(255, 214, 127, .08), transparent 18%),
+    radial-gradient(circle at 79% 32%, rgba(255, 220, 148, .06), transparent 20%),
+    radial-gradient(circle at 58% 66%, rgba(255, 255, 255, .035), transparent 22%),
+    linear-gradient(115deg, rgba(97, 75, 48, .10), rgba(28, 22, 18, 0) 28%, rgba(255,255,255,.025) 52%, rgba(27, 23, 19, .08) 68%, rgba(102, 79, 50, .10)),
+    linear-gradient(180deg, rgba(56, 45, 34, .94), rgba(25, 22, 20, .96)) !important;
+}
+
+/* Make center wave lines a touch more graceful like the reference */
+.heartbeat-svg {
+  opacity: .93;
+}
+
+.line-base,
+.line-fill,
+.line-shadow {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+@media (max-width: 900px) {
+  .timeline-stage::before {
+    width: 92vw;
+    height: 27vh;
+    top: 43%;
+    opacity: .33;
+    background-size: 8rem 8rem, 8rem 8rem, cover;
+  }
+  .timeline-stage::after {
+    width: 88vw;
+    height: 20vh;
+    top: 45%;
+  }
+}
+
+
+/* ==========================================================
+   Focus Mode: Dim & Illuminate — human fabric interaction
+   ========================================================== */
+
+.memory-stage.is-focus-mode .gold-network-svg {
+  opacity: .34 !important;
+  filter: blur(.35px) saturate(.78) brightness(.72);
+  transition: opacity .75s ease, filter .75s ease;
+}
+
+.memory-stage.is-focus-mode .timeline-stage::before {
+  opacity: .28 !important;
+  transition: opacity .75s ease;
+}
+
+.memory-stage.is-focus-mode .person-node.is-visible.is-dimmed {
+  opacity: .20 !important;
+  transform: translateY(.1rem) scale(.94) !important;
+  filter:
+    grayscale(1)
+    blur(1.6px)
+    drop-shadow(0 10px 22px rgba(0,0,0,.36)) !important;
+  transition:
+    opacity .85s ease,
+    transform .9s cubic-bezier(.16,.84,.26,1),
+    filter .85s ease !important;
+  z-index: 6 !important;
+}
+
+.memory-stage.is-focus-mode .person-node.is-visible.is-dimmed .person-name {
+  opacity: .38;
+  transition: opacity .85s ease;
+}
+
+.memory-stage.is-focus-mode .person-node.is-visible.is-dimmed .portrait-frame {
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.05),
+    0 0 0 .08rem rgba(55, 41, 24, .62),
+    0 10px 18px rgba(0,0,0,.28) !important;
+}
+
+.memory-stage.is-focus-mode .person-node.is-visible.is-focused,
+.memory-stage.is-focus-mode .person-node.is-visible.is-related {
+  opacity: 1 !important;
+  filter:
+    saturate(1.04)
+    drop-shadow(0 0 18px rgba(255, 218, 126, .34))
+    drop-shadow(0 22px 34px rgba(0,0,0,.45)) !important;
+  z-index: 38 !important;
+  transition:
+    opacity .75s ease,
+    transform .85s cubic-bezier(.16,.84,.26,1),
+    filter .75s ease !important;
+}
+
+.memory-stage.is-focus-mode .person-node.is-visible.is-focused {
+  transform: translateY(-.18rem) scale(1.07) !important;
+}
+
+.memory-stage.is-focus-mode .person-node.is-visible.is-related {
+  transform: translateY(-.05rem) scale(1.025) !important;
+}
+
+.memory-stage.is-focus-mode .person-node.is-focused .portrait-frame {
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.22),
+    0 0 0 .12rem rgba(92, 61, 25, .95),
+    0 0 0 .25rem rgba(251, 210, 111, .62),
+    0 0 34px rgba(255, 220, 137, .58),
+    0 0 70px rgba(255, 195, 76, .24),
+    0 18px 34px rgba(0,0,0,.42) !important;
+}
+
+.memory-stage.is-focus-mode .person-node.is-related .portrait-frame {
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.18),
+    0 0 0 .11rem rgba(81, 55, 23, .90),
+    0 0 0 .22rem rgba(239, 196, 104, .48),
+    0 0 26px rgba(255, 213, 122, .36),
+    0 16px 28px rgba(0,0,0,.36) !important;
+}
+
+.memory-stage.is-focus-mode .person-node.is-focused .person-name,
+.memory-stage.is-focus-mode .person-node.is-related .person-name {
+  color: #fff2c2 !important;
+  border-color: rgba(255, 221, 141, .76) !important;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255,232,158,.24), transparent 58%),
+    linear-gradient(180deg, rgba(114, 83, 38, .98), rgba(48, 35, 21, .96)) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 249, 209, .10),
+    0 0 0 1px rgba(85, 56, 24, .95),
+    0 0 22px rgba(255, 207, 102, .20),
+    0 10px 22px rgba(0,0,0,.32) !important;
+}
+
+.memory-stage.is-focus-mode .person-node.is-focused::after,
+.memory-stage.is-focus-mode .person-node.is-related::after {
+  opacity: 1 !important;
+  background: radial-gradient(circle, rgba(255, 226, 143, .72), rgba(255, 201, 86, .18), transparent 72%) !important;
+}
+
+/* Keep the focus effect visible behind the story panel, without sacrificing readability. */
+.story-overlay {
+  background: rgba(0, 7, 14, .66) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .memory-stage.is-focus-mode .person-node {
+    transition: opacity .01ms linear !important;
+  }
+}
+
+
+/* ==========================================================
+   Family groups murdered together — photo/story card
+   ========================================================== */
+
+.family-group-card {
+  margin: 0 1.35rem 1rem;
+  padding: .85rem;
+  display: grid;
+  grid-template-columns: minmax(11rem, 17rem) 1fr;
+  gap: 1rem;
+  align-items: center;
+  border-radius: 1.2rem;
+  border: 1px solid rgba(171, 126, 49, .22);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(194, 148, 62, .10), transparent 16rem),
+    linear-gradient(180deg, rgba(255,255,255,.50), rgba(255,255,255,.32));
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.24),
+    0 12px 26px rgba(0,0,0,.08);
+}
+
+.family-group-image-wrap {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border-radius: 1rem;
+  overflow: hidden;
+  background: rgba(38, 30, 19, .08);
+  border: 1px solid rgba(126, 91, 36, .18);
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.18),
+    0 10px 22px rgba(0,0,0,.14);
+}
+
+.family-group-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  filter: grayscale(1) contrast(1.06) brightness(1.04) sepia(.08) saturate(.20);
+}
+
+.family-group-image-wrap::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 50% 20%, rgba(255,255,255,.18), transparent 34%),
+    linear-gradient(180deg, transparent, rgba(31, 23, 14, .10));
+}
+
+.family-group-copy {
+  min-width: 0;
+  color: #3c3021;
+}
+
+.family-group-kicker {
+  display: inline-flex;
+  margin-bottom: .35rem;
+  padding: .32rem .65rem;
+  border-radius: 999px;
+  background: rgba(128, 93, 38, .10);
+  border: 1px solid rgba(128, 93, 38, .14);
+  color: #7b5a28;
+  font-size: .86rem;
+  font-weight: 850;
+}
+
+.family-group-copy h3 {
+  margin: 0 0 .32rem;
+  font-size: clamp(1.2rem, 2vw, 1.7rem);
+  line-height: 1.05;
+  color: #1d160e;
+}
+
+.family-group-copy p {
+  margin: 0 0 .7rem;
+  color: #594a36;
+  line-height: 1.6;
+}
+
+.family-group-members {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .35rem;
+}
+
+.family-group-members span {
+  padding: .32rem .55rem;
+  border-radius: .55rem;
+  color: #513d1d;
+  background: rgba(128, 93, 38, .08);
+  border: 1px solid rgba(128, 93, 38, .12);
+  font-weight: 750;
+}
+
+/* Show family-group illumination a little more warmly during focus mode */
+.memory-stage.is-focus-mode .person-node.is-related .portrait-frame {
+  border-color: rgba(255, 227, 151, .78) !important;
+}
+
+.memory-stage.is-focus-mode .person-node.is-focused .person-name::after,
+.memory-stage.is-focus-mode .person-node.is-related .person-name::after {
+  content: "";
+  display: block;
+  width: 1.8rem;
+  height: 1px;
+  margin: .22rem auto 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 225, 145, .78), transparent);
+}
+
+@media (max-width: 760px) {
+  .family-group-card {
+    grid-template-columns: 1fr;
+    margin-inline: 1rem;
+  }
+
+  .family-group-image-wrap {
+    aspect-ratio: 16 / 10;
+  }
+}
+
+
+/* ==========================================================
+   V4: closer woven human fabric + anti-overlap spacing
+   ========================================================== */
+
+/* Stronger woven fabric texture, closer to the original reference */
+.timeline-stage::before {
+  top: 44.2% !important;
+  width: min(74vw, 58rem) !important;
+  height: min(32vh, 20rem) !important;
+  opacity: .58 !important;
+  border-radius: 46% !important;
+  background:
+    repeating-linear-gradient(56deg,
+      rgba(210, 184, 120, .15) 0 3px,
+      rgba(33, 51, 70, .28) 3px 17px,
+      transparent 17px 32px),
+    repeating-linear-gradient(-56deg,
+      rgba(210, 184, 120, .13) 0 3px,
+      rgba(33, 51, 70, .24) 3px 17px,
+      transparent 17px 32px),
+    radial-gradient(circle at 50% 50%, rgba(255, 228, 165, .12), transparent 55%);
+  background-size: 9rem 9rem, 9rem 9rem, cover !important;
+  box-shadow:
+    inset 0 0 2.8rem rgba(0,0,0,.30),
+    0 0 5rem rgba(10, 32, 56, .25) !important;
+  filter: blur(.15px) !important;
+  mask-image: radial-gradient(circle at 50% 50%, rgba(0,0,0,.98) 0 44%, rgba(0,0,0,.7) 61%, rgba(0,0,0,0) 86%) !important;
+  -webkit-mask-image: radial-gradient(circle at 50% 50%, rgba(0,0,0,.98) 0 44%, rgba(0,0,0,.7) 61%, rgba(0,0,0,0) 86%) !important;
+}
+
+.timeline-stage::after {
+  top: 45.5% !important;
+  width: min(68vw, 53rem) !important;
+  height: min(24vh, 15rem) !important;
+  opacity: .30 !important;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255, 231, 171, .20), transparent 43%),
+    radial-gradient(circle at 50% 50%, rgba(44, 79, 113, .28), transparent 74%) !important;
+  filter: blur(14px) !important;
+}
+
+/* Put the luminous thread web exactly through the portrait field */
+.gold-network-svg {
+  top: 37.2vh !important;
+  height: 31.5vh !important;
+  opacity: .98 !important;
+}
+
+.gold-network-svg .threads path {
+  stroke-width: 1.12 !important;
+  opacity: .86 !important;
+  filter:
+    drop-shadow(0 0 3px rgba(255, 233, 166, .48))
+    drop-shadow(0 0 11px rgba(247, 194, 84, .18)) !important;
+}
+
+.gold-network-svg .threads path:nth-child(2n) { opacity: .74 !important; }
+.gold-network-svg .threads path:nth-child(3n) { opacity: .63 !important; }
+
+/* Smaller medallions and slightly narrower plaques prevent overlaps */
+.person-node {
+  width: var(--node-w, 7.05rem) !important;
+}
+
+.portrait-frame {
+  width: var(--photo-w, 5.7rem) !important;
+  padding: .28rem !important;
+}
+
+.person-name {
+  max-width: 7.2rem !important;
+  padding: .38rem .58rem .34rem !important;
+  font-size: clamp(.68rem, .78vw, .84rem) !important;
+  line-height: 1.05 !important;
+}
+
+.person-name span {
+  letter-spacing: 0 !important;
+}
+
+/* Give the bottom row more separation from the thread web */
+.person-node.is-bottom {
+  z-index: 14;
+}
+
+.person-node.is-top {
+  z-index: 15;
+}
+
+/* Keep focus illumination, but don't let related nodes physically collide */
+.memory-stage.is-focus-mode .person-node.is-visible.is-focused {
+  transform: translateY(-.12rem) scale(1.04) !important;
+}
+
+.memory-stage.is-focus-mode .person-node.is-visible.is-related {
+  transform: translateY(-.03rem) scale(1.015) !important;
+}
+
+/* Mobile alignment */
+@media (max-width: 900px) {
+  .gold-network-svg {
+    top: 39vh !important;
+    height: 26vh !important;
+  }
+
+  .timeline-stage::before {
+    width: 90vw !important;
+    height: 23vh !important;
+    top: 45.5% !important;
+    opacity: .46 !important;
+    background-size: 7rem 7rem, 7rem 7rem, cover !important;
+  }
+
+  .timeline-stage::after {
+    width: 84vw !important;
+    height: 17vh !important;
+    top: 46.6% !important;
+  }
+
+  .person-node {
+    width: var(--node-w, 6.2rem) !important;
+  }
+
+  .portrait-frame {
+    width: var(--photo-w, 4.55rem) !important;
+  }
+
+  .person-name {
+    max-width: 6.1rem !important;
+    font-size: .64rem !important;
+  }
+}
+
+
+/* ==========================================================
+   V3 complete: true human-fabric web + local data fix
+   ========================================================== */
+
+/* The reference is more like woven light threads than a visible diamond grid. */
+.timeline-stage::before {
+  opacity: .20 !important;
+  width: min(70vw, 54rem) !important;
+  height: min(26vh, 16rem) !important;
+  top: 45% !important;
+  background:
+    repeating-linear-gradient(55deg,
+      transparent 0 18px,
+      rgba(213, 188, 123, .10) 18px 20px,
+      transparent 20px 38px),
+    repeating-linear-gradient(-55deg,
+      transparent 0 18px,
+      rgba(213, 188, 123, .08) 18px 20px,
+      transparent 20px 38px),
+    radial-gradient(circle at 50% 50%, rgba(255, 229, 166, .11), transparent 58%) !important;
+  background-size: 10rem 10rem, 10rem 10rem, cover !important;
+}
+
+/* Real criss-crossing human-fabric threads, closer to the screenshot. */
+.human-fabric-svg {
+  position: absolute;
+  inset-inline: 0;
+  top: 36.4vh;
+  width: 100%;
+  height: 34vh;
+  z-index: 2;
+  pointer-events: none;
+  opacity: .94;
+}
+
+.human-fabric-svg .fabric-threads path {
+  fill: none;
+  stroke: url(#fabricGold);
+  stroke-width: 1.05;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: .74;
+  filter:
+    drop-shadow(0 0 3px rgba(255, 232, 166, .44))
+    drop-shadow(0 0 10px rgba(233, 185, 75, .20));
+}
+
+.human-fabric-svg .fabric-threads path:nth-child(2n) {
+  opacity: .62;
+  stroke-width: .86;
+}
+
+.human-fabric-svg .fabric-threads path:nth-child(3n) {
+  opacity: .50;
+  stroke-width: .72;
+}
+
+/* Keep the older network as the main horizontal glow, but less visually dominant. */
+.gold-network-svg {
+  top: 37.7vh !important;
+  height: 30vh !important;
+  z-index: 3 !important;
+  opacity: .80 !important;
+}
+
+.gold-network-svg .threads path {
+  opacity: .50 !important;
+  stroke-width: .82 !important;
+}
+
+/* Ensure portraits are always above all fabric lines. */
+.timeline-layer {
+  z-index: 12 !important;
+}
+
+.person-node {
+  z-index: 20 !important;
+}
+
+/* More anti-overlap on the right pair and all focus scaling. */
+.memory-stage.is-focus-mode .person-node.is-visible.is-focused {
+  transform: translateY(-.08rem) scale(1.035) !important;
+}
+
+.memory-stage.is-focus-mode .person-node.is-visible.is-related {
+  transform: translateY(0) scale(1.008) !important;
+}
+
+@media (max-width: 900px) {
+  .human-fabric-svg {
+    top: 38.2vh;
+    height: 29vh;
+    opacity: .78;
+  }
+
+  .human-fabric-svg .fabric-threads path {
+    stroke-width: .82;
+  }
+}
+
+
+/* ==========================================================
+   V4 final: closer human tissue + no poem/card overlap
+   ========================================================== */
+
+/* Remove the visible diamond grid. Keep only a soft fabric glow behind the thread web. */
+.timeline-stage::before {
+  top: 50% !important;
+  width: min(70vw, 58rem) !important;
+  height: min(32vh, 20rem) !important;
+  opacity: .18 !important;
+  border-radius: 50% !important;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255, 228, 159, .18), transparent 42%),
+    radial-gradient(circle at 50% 50%, rgba(64, 100, 140, .18), transparent 70%) !important;
+  filter: blur(18px) !important;
+  box-shadow: none !important;
+  mask-image: radial-gradient(circle at 50% 50%, rgba(0,0,0,.8) 0 54%, rgba(0,0,0,.35) 68%, rgba(0,0,0,0) 90%) !important;
+  -webkit-mask-image: radial-gradient(circle at 50% 50%, rgba(0,0,0,.8) 0 54%, rgba(0,0,0,.35) 68%, rgba(0,0,0,0) 90%) !important;
+}
+
+.timeline-stage::after {
+  top: 52% !important;
+  width: min(62vw, 52rem) !important;
+  height: min(22vh, 15rem) !important;
+  opacity: .20 !important;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255, 231, 171, .22), transparent 46%),
+    radial-gradient(circle at 50% 50%, rgba(44, 79, 113, .22), transparent 74%) !important;
+  filter: blur(16px) !important;
+}
+
+/* Human fabric threads: curved, layered, and close to the reference image. */
+.human-fabric-svg {
+  position: absolute;
+  inset-inline: 0;
+  top: 40.2vh !important;
+  width: 100%;
+  height: 31.5vh !important;
+  z-index: 2;
+  pointer-events: none;
+  opacity: .98 !important;
+}
+
+.human-fabric-svg .fabric-threads path {
+  fill: none;
+  stroke: url(#fabricGold);
+  stroke-width: 1.02;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: .74;
+  filter:
+    drop-shadow(0 0 3px rgba(255, 234, 169, .48))
+    drop-shadow(0 0 10px rgba(231, 181, 70, .20));
+}
+
+.human-fabric-svg .fabric-threads path:nth-child(2n) {
+  opacity: .62;
+  stroke-width: .84;
+}
+
+.human-fabric-svg .fabric-threads path:nth-child(3n) {
+  opacity: .52;
+  stroke-width: .72;
+}
+
+/* Keep the older golden network as only a gentle horizontal base, not the main fabric. */
+.gold-network-svg {
+  top: 41.1vh !important;
+  height: 27vh !important;
+  z-index: 3 !important;
+  opacity: .56 !important;
+}
+
+.gold-network-svg .threads path {
+  stroke-width: .72 !important;
+  opacity: .38 !important;
+}
+
+/* Ensure portraits are above the fabric. */
+.timeline-layer {
+  z-index: 15 !important;
+}
+
+.person-node {
+  z-index: 22 !important;
+  width: var(--node-w, 6.85rem) !important;
+}
+
+/* Smaller medallions and plaques help prevent overlap. */
+.portrait-frame {
+  width: var(--photo-w, 5.38rem) !important;
+  padding: .26rem !important;
+}
+
+.person-name {
+  max-width: 6.95rem !important;
+  padding: .36rem .54rem .32rem !important;
+  font-size: clamp(.66rem, .74vw, .80rem) !important;
+  line-height: 1.04 !important;
+}
+
+.person-name span {
+  white-space: normal !important;
+}
+
+/* The poem remains visually above the portraits with clear breathing space. */
+.hero-title {
+  top: clamp(.55rem, 1.45vh, .95rem) !important;
+}
+
+.hero-poem .poem-panel {
+  width: min(39rem, 72vw) !important;
+  min-height: 7.05rem !important;
+  padding-top: .92rem !important;
+  padding-bottom: .84rem !important;
+}
+
+.hero-poem .poem-panel p {
+  font-size: clamp(.96rem, 1.22vw, 1.18rem) !important;
+}
+
+/* Focus mode keeps the relationship glow but avoids physical collisions. */
+.memory-stage.is-focus-mode .person-node.is-visible.is-focused {
+  transform: translateY(-.06rem) scale(1.025) !important;
+}
+
+.memory-stage.is-focus-mode .person-node.is-visible.is-related {
+  transform: translateY(0) scale(1.006) !important;
+}
+
+/* If the user searches and sees the empty state, do not show the fabric as a heavy grid behind it. */
+.empty-state {
+  z-index: 30 !important;
+}
+
+.empty-state h2 {
+  color: rgba(255, 241, 196, .90) !important;
+}
+
+/* Mobile */
+@media (max-width: 900px) {
+  .human-fabric-svg {
+    top: 41.5vh !important;
+    height: 26vh !important;
+    opacity: .78 !important;
+  }
+
+  .gold-network-svg {
+    top: 42vh !important;
+    height: 24vh !important;
+  }
+
+  .portrait-frame {
+    width: var(--photo-w, 4.35rem) !important;
+  }
+
+  .person-name {
+    max-width: 5.8rem !important;
+    font-size: .61rem !important;
+  }
+
+  .hero-poem .poem-panel {
+    width: min(91vw, 32rem) !important;
+  }
+}
+
+
+/* ==========================================================
+   V5: match the original tissue more closely and remove overlap
+   ========================================================== */
+
+/* Move the poem slightly up and make it a little more compact. */
+.hero-title {
+  top: 1.35rem !important;
+}
+
+.hero-poem .poem-panel {
+  width: min(46rem, 82vw) !important;
+  min-height: 8.45rem !important;
+  padding-top: .95rem !important;
+  padding-bottom: .82rem !important;
+}
+
+.hero-poem .poem-panel p {
+  font-size: clamp(1.06rem, 1.34vw, 1.32rem) !important;
+  gap: .1rem !important;
+}
+
+/* Keep only a soft aura behind the tissue, not a visible grid. */
+.timeline-stage::before {
+  top: 52% !important;
+  width: min(72vw, 64rem) !important;
+  height: min(34vh, 21rem) !important;
+  opacity: .16 !important;
+  border-radius: 50% !important;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255, 232, 176, .16), transparent 40%),
+    radial-gradient(circle at 50% 50%, rgba(66, 98, 136, .14), transparent 74%) !important;
+  filter: blur(18px) !important;
+  box-shadow: none !important;
+  mask-image: radial-gradient(circle at 50% 50%, rgba(0,0,0,.85) 0 56%, rgba(0,0,0,.22) 76%, rgba(0,0,0,0) 92%) !important;
+  -webkit-mask-image: radial-gradient(circle at 50% 50%, rgba(0,0,0,.85) 0 56%, rgba(0,0,0,.22) 76%, rgba(0,0,0,0) 92%) !important;
+}
+
+.timeline-stage::after {
+  top: 52% !important;
+  width: min(62vw, 54rem) !important;
+  height: min(22vh, 14rem) !important;
+  opacity: .18 !important;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255, 239, 196, .17), transparent 44%),
+    radial-gradient(circle at 50% 50%, rgba(34, 66, 106, .18), transparent 76%) !important;
+  filter: blur(17px) !important;
+}
+
+/* Human fabric now goes THROUGH the portrait band like the original reference. */
+.human-fabric-svg {
+  position: absolute;
+  inset-inline: 0;
+  top: 33vh !important;
+  width: 100%;
+  height: 41vh !important;
+  z-index: 3 !important;
+  pointer-events: none;
+  opacity: .98 !important;
+}
+
+.human-fabric-svg .fabric-threads path {
+  fill: none;
+  stroke: url(#fabricGold);
+  stroke-width: 1.02;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: .70;
+  filter:
+    drop-shadow(0 0 3px rgba(255, 236, 187, .42))
+    drop-shadow(0 0 10px rgba(228, 180, 77, .20));
+}
+
+.human-fabric-svg .fabric-threads path:nth-child(2n) {
+  stroke-width: .86;
+  opacity: .58;
+}
+
+.human-fabric-svg .fabric-threads path:nth-child(3n) {
+  stroke-width: .74;
+  opacity: .48;
+}
+
+/* Secondary network becomes subtle. */
+.gold-network-svg {
+  top: 34.8vh !important;
+  height: 38vh !important;
+  z-index: 2 !important;
+  opacity: .30 !important;
+}
+
+.gold-network-svg .threads path {
+  stroke-width: .62 !important;
+  opacity: .24 !important;
+}
+
+/* Put nodes clearly below the poem and above the tissue. */
+.timeline-layer {
+  z-index: 15 !important;
+}
+
+.person-node {
+  z-index: 22 !important;
+  width: var(--node-w, 6.45rem) !important;
+}
+
+.portrait-frame {
+  width: var(--photo-w, 5.15rem) !important;
+  padding: .22rem !important;
+}
+
+.person-name {
+  max-width: 6.4rem !important;
+  padding: .34rem .48rem .3rem !important;
+  font-size: clamp(.64rem, .70vw, .78rem) !important;
+  line-height: 1.03 !important;
+  border-radius: .72rem !important;
+}
+
+.person-name span {
+  white-space: normal !important;
+}
+
+/* Smaller glow in focus mode so it doesn't visually feel like overlap. */
+.memory-stage.is-focus-mode .person-node.is-visible.is-focused {
+  transform: translateY(-.04rem) scale(1.018) !important;
+}
+
+.memory-stage.is-focus-mode .person-node.is-visible.is-related {
+  transform: translateY(0) scale(1.005) !important;
+}
+
+@media (max-width: 900px) {
+  .hero-title {
+    top: .7rem !important;
+  }
+
+  .hero-poem .poem-panel {
+    width: min(92vw, 32rem) !important;
+    min-height: 7.1rem !important;
+  }
+
+  .human-fabric-svg {
+    top: 36vh !important;
+    height: 34vh !important;
+    opacity: .84 !important;
+  }
+
+  .gold-network-svg {
+    top: 38vh !important;
+    height: 32vh !important;
+  }
+
+  .portrait-frame {
+    width: var(--photo-w, 4.2rem) !important;
+  }
+
+  .person-name {
+    max-width: 5.5rem !important;
+    font-size: .60rem !important;
+  }
+}
+
+
+/* ==========================================================
+   V6: fixed two-row layout, reference-like tissue, responsive
+   ========================================================== */
+
+/* Compact poem with enough breathing room for the first portrait row. */
+.hero-title {
+  top: clamp(.55rem, 1.35vh, 1rem) !important;
+}
+
+.hero-poem .poem-panel {
+  width: min(43rem, 78vw) !important;
+  min-height: 7.6rem !important;
+  padding: .9rem 1.35rem .78rem !important;
+}
+
+.hero-poem .poem-panel p {
+  font-size: clamp(.98rem, 1.22vw, 1.22rem) !important;
+  line-height: 1.25 !important;
+}
+
+/* Hide grid feeling; leave only a soft fabric glow. */
+.timeline-stage::before {
+  top: 53% !important;
+  width: min(76vw, 68rem) !important;
+  height: min(36vh, 22rem) !important;
+  opacity: .18 !important;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255, 232, 176, .16), transparent 42%),
+    radial-gradient(circle at 50% 50%, rgba(64, 100, 140, .14), transparent 75%) !important;
+  filter: blur(18px) !important;
+  box-shadow: none !important;
+  mask-image: radial-gradient(circle at 50% 50%, rgba(0,0,0,.85) 0 56%, rgba(0,0,0,.24) 76%, rgba(0,0,0,0) 92%) !important;
+  -webkit-mask-image: radial-gradient(circle at 50% 50%, rgba(0,0,0,.85) 0 56%, rgba(0,0,0,.24) 76%, rgba(0,0,0,0) 92%) !important;
+}
+
+.timeline-stage::after {
+  top: 54% !important;
+  width: min(66vw, 58rem) !important;
+  height: min(24vh, 15rem) !important;
+  opacity: .20 !important;
+  filter: blur(17px) !important;
+}
+
+/* Tissue web through both rows, similar to the reference image. */
+.human-fabric-svg {
+  position: absolute;
+  inset-inline: 0;
+  top: 34vh !important;
+  width: 100%;
+  height: 40vh !important;
+  z-index: 3 !important;
+  pointer-events: none;
+  opacity: .96 !important;
+}
+
+.human-fabric-svg .fabric-threads path {
+  fill: none;
+  stroke: url(#fabricGold);
+  stroke-width: 1.0;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: .68;
+  filter:
+    drop-shadow(0 0 3px rgba(255, 236, 187, .42))
+    drop-shadow(0 0 10px rgba(228, 180, 77, .18));
+}
+
+.human-fabric-svg .fabric-threads path:nth-child(2n) {
+  stroke-width: .82;
+  opacity: .56;
+}
+
+.human-fabric-svg .fabric-threads path:nth-child(3n) {
+  stroke-width: .70;
+  opacity: .46;
+}
+
+/* Keep the older golden network subtle, just a warm baseline. */
+.gold-network-svg {
+  top: 36vh !important;
+  height: 37vh !important;
+  z-index: 2 !important;
+  opacity: .26 !important;
+}
+
+.gold-network-svg .threads path {
+  stroke-width: .55 !important;
+  opacity: .22 !important;
+}
+
+.timeline-layer {
+  z-index: 15 !important;
+}
+
+.person-node {
+  z-index: 22 !important;
+  width: var(--node-w, 6.15rem) !important;
+}
+
+/* Smaller portraits prevent overlap and match the reference proportions. */
+.portrait-frame {
+  width: var(--photo-w, 4.95rem) !important;
+  padding: .22rem !important;
+}
+
+.person-name {
+  max-width: 6.2rem !important;
+  padding: .33rem .46rem .30rem !important;
+  font-size: clamp(.62rem, .68vw, .76rem) !important;
+  line-height: 1.03 !important;
+  border-radius: .62rem !important;
+}
+
+.person-name span {
+  white-space: normal !important;
+}
+
+/* Hard override the inline JS positions so the design is always two rows. */
+.person-node[data-slot-index="0"] { left: 12% !important; right: auto !important; top: 44.8% !important; }
+.person-node[data-slot-index="1"] { left: 24.5% !important; right: auto !important; top: 63.8% !important; }
+.person-node[data-slot-index="2"] { left: 37% !important; right: auto !important; top: 44.8% !important; }
+.person-node[data-slot-index="3"] { left: 49.5% !important; right: auto !important; top: 63.8% !important; }
+.person-node[data-slot-index="4"] { left: 62% !important; right: auto !important; top: 44.8% !important; }
+.person-node[data-slot-index="5"] { left: 74.5% !important; right: auto !important; top: 63.8% !important; }
+.person-node[data-slot-index="6"] { left: 87% !important; right: auto !important; top: 44.8% !important; }
+.person-node[data-slot-index="7"] { left: 96.5% !important; right: auto !important; top: 63.8% !important; }
+
+/* Do not enlarge enough to cause collisions. */
+.memory-stage.is-focus-mode .person-node.is-visible.is-focused {
+  transform: translateY(-.04rem) scale(1.018) !important;
+}
+
+.memory-stage.is-focus-mode .person-node.is-visible.is-related {
+  transform: translateY(0) scale(1.005) !important;
+}
+
+/* iPad / tablet landscape and portrait */
+@media (max-width: 1180px) {
+  .hero-poem .poem-panel {
+    width: min(40rem, 78vw) !important;
+  }
+
+  .person-node {
+    width: var(--node-w, 5.8rem) !important;
+  }
+
+  .portrait-frame {
+    width: var(--photo-w, 4.55rem) !important;
+  }
+
+  .person-name {
+    max-width: 5.65rem !important;
+    font-size: clamp(.58rem, .82vw, .70rem) !important;
+  }
+
+  .person-node[data-slot-index="0"] { left: 10% !important; top: 45.5% !important; }
+  .person-node[data-slot-index="1"] { left: 23% !important; top: 64.5% !important; }
+  .person-node[data-slot-index="2"] { left: 36% !important; top: 45.5% !important; }
+  .person-node[data-slot-index="3"] { left: 49% !important; top: 64.5% !important; }
+  .person-node[data-slot-index="4"] { left: 62% !important; top: 45.5% !important; }
+  .person-node[data-slot-index="5"] { left: 75% !important; top: 64.5% !important; }
+  .person-node[data-slot-index="6"] { left: 88% !important; top: 45.5% !important; }
+  .person-node[data-slot-index="7"] { left: 96% !important; top: 64.5% !important; }
+}
+
+/* iPad portrait / smaller tablets: keep 2 rows but use safer spacing */
+@media (max-width: 900px) {
+  body {
+    overflow: hidden !important;
+  }
+
+  .hero-title {
+    top: .6rem !important;
+  }
+
+  .hero-poem .poem-panel {
+    width: min(88vw, 33rem) !important;
+    min-height: 6.9rem !important;
+    padding: .78rem .9rem .68rem !important;
+  }
+
+  .hero-poem .poem-panel p {
+    font-size: clamp(.78rem, 2.2vw, 1rem) !important;
+  }
+
+  .human-fabric-svg {
+    top: 34.5vh !important;
+    height: 38vh !important;
+    opacity: .78 !important;
+  }
+
+  .gold-network-svg {
+    top: 37vh !important;
+    height: 34vh !important;
+  }
+
+  .portrait-frame {
+    width: var(--photo-w, 4.05rem) !important;
+  }
+
+  .person-name {
+    max-width: 5.1rem !important;
+    font-size: .58rem !important;
+  }
+
+  .person-node[data-slot-index="0"] { left: 14% !important; top: 43.5% !important; }
+  .person-node[data-slot-index="1"] { left: 32% !important; top: 60.5% !important; }
+  .person-node[data-slot-index="2"] { left: 50% !important; top: 43.5% !important; }
+  .person-node[data-slot-index="3"] { left: 68% !important; top: 60.5% !important; }
+  .person-node[data-slot-index="4"] { left: 86% !important; top: 43.5% !important; }
+  .person-node[data-slot-index="5"] { left: 96% !important; top: 60.5% !important; }
+}
+
+/* Phones: show the 6 mobile slots as 3+3, controls stacked. */
+@media (max-width: 760px) {
+  .top-bar {
+    inset-inline: .65rem !important;
+    bottom: .65rem !important;
+    gap: .45rem !important;
+  }
+
+  .search-box,
+  .filter-box select,
+  .ghost-btn {
+    height: 2.55rem !important;
+    font-size: .86rem !important;
+  }
+
+  .controls {
+    gap: .45rem !important;
+  }
+
+  .human-fabric-svg {
+    top: 37vh !important;
+    height: 29vh !important;
+    opacity: .68 !important;
+  }
+
+  .gold-network-svg {
+    top: 39vh !important;
+    height: 27vh !important;
+  }
+
+  .portrait-frame {
+    width: 3.65rem !important;
+  }
+
+  .person-name {
+    max-width: 4.7rem !important;
+    padding: .26rem .36rem .24rem !important;
+    font-size: .52rem !important;
+  }
+
+  .person-node[data-slot-index="0"] { left: 16% !important; top: 40.5% !important; }
+  .person-node[data-slot-index="1"] { left: 34% !important; top: 55.5% !important; }
+  .person-node[data-slot-index="2"] { left: 52% !important; top: 40.5% !important; }
+  .person-node[data-slot-index="3"] { left: 70% !important; top: 55.5% !important; }
+  .person-node[data-slot-index="4"] { left: 88% !important; top: 40.5% !important; }
+  .person-node[data-slot-index="5"] { left: 96% !important; top: 55.5% !important; }
+}
+
+
+/* ==========================================================
+   V8: fix spacing + subtle embedded portraits (after V7 regression)
+   ========================================================== */
+
+/* Give noticeably more breathing room between poem and tissue */
+.hero-title {
+  top: .55rem !important;
+}
+
+.hero-poem .poem-panel {
+  width: min(41rem, 74vw) !important;
+}
+
+/* Lower the whole fabric system a bit */
+.human-fabric-svg {
+  top: 39.2vh !important;
+  height: 31vh !important;
+  opacity: .82 !important;
+  z-index: 6 !important;
+}
+
+.gold-network-svg {
+  top: 41vh !important;
+  height: 28vh !important;
+  opacity: .18 !important;
+  z-index: 5 !important;
+}
+
+.timeline-stage::before {
+  top: 57% !important;
+  width: min(72vw, 56rem) !important;
+  height: min(27vh, 16rem) !important;
+  opacity: .18 !important;
+}
+
+.timeline-stage::after {
+  top: 58% !important;
+  width: min(60vw, 48rem) !important;
+  height: min(18vh, 10rem) !important;
+  opacity: .12 !important;
+}
+
+.timeline-layer {
+  z-index: 18 !important;
+}
+
+.person-node {
+  z-index: 24 !important;
+  filter: blur(0) drop-shadow(0 14px 24px rgba(0,0,0,.32)) !important;
+}
+
+/* Two rows with more space below poem and no overlap */
+.person-node[data-slot-index="0"] { left: 11.5% !important; right: auto !important; top: 48.2% !important; }
+.person-node[data-slot-index="1"] { left: 24.5% !important; right: auto !important; top: 66.2% !important; }
+.person-node[data-slot-index="2"] { left: 37.5% !important; right: auto !important; top: 48.2% !important; }
+.person-node[data-slot-index="3"] { left: 50.5% !important; right: auto !important; top: 66.2% !important; }
+.person-node[data-slot-index="4"] { left: 63.5% !important; right: auto !important; top: 48.2% !important; }
+.person-node[data-slot-index="5"] { left: 76.5% !important; right: auto !important; top: 66.2% !important; }
+.person-node[data-slot-index="6"] { left: 89.5% !important; right: auto !important; top: 48.2% !important; }
+.person-node[data-slot-index="7"] { left: 97% !important; right: auto !important; top: 66.2% !important; }
+
+/* Portraits subtly emerge from the tissue instead of sitting far away from it */
+.portrait-frame {
+  overflow: visible !important;
+  isolation: isolate;
+}
+
+.portrait-frame::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 118%;
+  height: 1.05rem;
+  border-radius: 999px;
+  pointer-events: none;
+  opacity: .48;
+  z-index: -1;
+  background:
+    linear-gradient(90deg,
+      rgba(255, 231, 171, 0) 0%,
+      rgba(255, 231, 171, .26) 18%,
+      rgba(255, 248, 223, .82) 50%,
+      rgba(255, 231, 171, .26) 82%,
+      rgba(255, 231, 171, 0) 100%),
+    radial-gradient(circle at 50% 50%, rgba(255, 233, 165, .26), transparent 70%);
+  filter: blur(4px);
+  mix-blend-mode: screen;
+}
+
+.person-node.is-top .portrait-frame::after {
+  bottom: -.4rem;
+}
+
+.person-node.is-bottom .portrait-frame::after {
+  top: -.4rem;
+}
+
+.person-node::before {
+  content: "" !important;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2.6rem;
+  height: .6rem;
+  border-radius: 999px;
+  opacity: .42;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(255, 234, 176, .52), rgba(255, 217, 122, .12), transparent 72%);
+  filter: blur(6px);
+}
+
+.person-node.is-top::before {
+  top: calc(100% - .15rem);
+}
+
+.person-node.is-bottom::before {
+  bottom: calc(100% - .15rem);
+}
+
+.person-node::after {
+  width: 2.7rem !important;
+  height: .8rem !important;
+  opacity: .36 !important;
+  filter: blur(8px) !important;
+}
+
+/* Tablet */
+@media (max-width: 1180px) {
+  .hero-title { top: .45rem !important; }
+
+  .human-fabric-svg {
+    top: 38.8vh !important;
+    height: 30vh !important;
+  }
+
+  .gold-network-svg {
+    top: 40.7vh !important;
+    height: 27vh !important;
+  }
+
+  .person-node[data-slot-index="0"] { left: 10% !important; top: 48.4% !important; }
+  .person-node[data-slot-index="1"] { left: 23% !important; top: 65.4% !important; }
+  .person-node[data-slot-index="2"] { left: 36% !important; top: 48.4% !important; }
+  .person-node[data-slot-index="3"] { left: 49% !important; top: 65.4% !important; }
+  .person-node[data-slot-index="4"] { left: 62% !important; top: 48.4% !important; }
+  .person-node[data-slot-index="5"] { left: 75% !important; top: 65.4% !important; }
+  .person-node[data-slot-index="6"] { left: 88% !important; top: 48.4% !important; }
+  .person-node[data-slot-index="7"] { left: 96% !important; top: 65.4% !important; }
+}
+
+/* iPad portrait / smaller tablets */
+@media (max-width: 900px) {
+  .hero-title {
+    top: .5rem !important;
+  }
+
+  .hero-poem .poem-panel {
+    width: min(88vw, 33rem) !important;
+    min-height: 6.45rem !important;
+  }
+
+  .human-fabric-svg {
+    top: 38.5vh !important;
+    height: 28vh !important;
+    opacity: .76 !important;
+  }
+
+  .gold-network-svg {
+    top: 40.6vh !important;
+    height: 24vh !important;
+  }
+
+  .portrait-frame::after {
+    width: 112% !important;
+    height: .92rem !important;
+  }
+
+  .person-node[data-slot-index="0"] { left: 14% !important; top: 46.4% !important; }
+  .person-node[data-slot-index="1"] { left: 32% !important; top: 61.8% !important; }
+  .person-node[data-slot-index="2"] { left: 50% !important; top: 46.4% !important; }
+  .person-node[data-slot-index="3"] { left: 68% !important; top: 61.8% !important; }
+  .person-node[data-slot-index="4"] { left: 86% !important; top: 46.4% !important; }
+  .person-node[data-slot-index="5"] { left: 96% !important; top: 61.8% !important; }
+}
+
+/* Phones */
+@media (max-width: 760px) {
+  .hero-title {
+    top: .4rem !important;
+  }
+
+  .hero-poem .poem-panel {
+    width: min(92vw, 28rem) !important;
+    min-height: 5.9rem !important;
+    padding: .72rem .8rem .62rem !important;
+  }
+
+  .hero-poem .poem-panel p {
+    font-size: clamp(.78rem, 2.9vw, .95rem) !important;
+    line-height: 1.24 !important;
+  }
+
+  .human-fabric-svg {
+    top: 37.8vh !important;
+    height: 22vh !important;
+    opacity: .70 !important;
+  }
+
+  .gold-network-svg {
+    top: 39.7vh !important;
+    height: 20vh !important;
+  }
+
+  .portrait-frame::after {
+    width: 108% !important;
+    height: .8rem !important;
+    filter: blur(3px) !important;
+  }
+
+  .person-node::before {
+    width: 2rem !important;
+    height: .5rem !important;
+    filter: blur(4px) !important;
+  }
+
+  .person-node[data-slot-index="0"] { left: 16% !important; top: 44.6% !important; }
+  .person-node[data-slot-index="1"] { left: 34% !important; top: 58.8% !important; }
+  .person-node[data-slot-index="2"] { left: 52% !important; top: 44.6% !important; }
+  .person-node[data-slot-index="3"] { left: 70% !important; top: 58.8% !important; }
+  .person-node[data-slot-index="4"] { left: 88% !important; top: 44.6% !important; }
+  .person-node[data-slot-index="5"] { left: 96% !important; top: 58.8% !important; }
+}
+
+
+/* ==========================================================
+   V10: fixed JS-left positioning + lower people and tissue
+   ========================================================== */
+
+/* Critical fix: now JS uses left, so center nodes correctly. */
+.person-node {
+  translate: -50% -50% !important;
+  width: var(--node-w, 6.25rem) !important;
+  z-index: 24 !important;
+}
+
+/* Give the poem its own clear upper area. */
+.hero-title {
+  top: .7rem !important;
+}
+
+.hero-poem .poem-panel {
+  width: min(42rem, 76vw) !important;
+  min-height: 7.4rem !important;
+  padding: .9rem 1.35rem .78rem !important;
+}
+
+.hero-poem .poem-panel p {
+  font-size: clamp(.96rem, 1.18vw, 1.18rem) !important;
+  line-height: 1.24 !important;
+}
+
+/* Lower the human tissue into the middle-lower screen area. */
+.human-fabric-svg {
+  top: 47.2vh !important;
+  height: 29vh !important;
+  opacity: .84 !important;
+  z-index: 6 !important;
+}
+
+.gold-network-svg {
+  top: 49.2vh !important;
+  height: 25vh !important;
+  opacity: .16 !important;
+  z-index: 5 !important;
+}
+
+.timeline-stage::before {
+  top: 64% !important;
+  width: min(76vw, 62rem) !important;
+  height: min(24vh, 14rem) !important;
+  opacity: .16 !important;
+}
+
+.timeline-stage::after {
+  top: 65% !important;
+  width: min(64vw, 52rem) !important;
+  height: min(16vh, 9rem) !important;
+  opacity: .12 !important;
+}
+
+/* Hard fallback positions in case older inline style is cached by browser. */
+.person-node[data-slot-index="0"] { left: 12% !important; right: auto !important; top: 52.2% !important; }
+.person-node[data-slot-index="1"] { left: 25% !important; right: auto !important; top: 70.7% !important; }
+.person-node[data-slot-index="2"] { left: 38% !important; right: auto !important; top: 52.2% !important; }
+.person-node[data-slot-index="3"] { left: 51% !important; right: auto !important; top: 70.7% !important; }
+.person-node[data-slot-index="4"] { left: 64% !important; right: auto !important; top: 52.2% !important; }
+.person-node[data-slot-index="5"] { left: 77% !important; right: auto !important; top: 70.7% !important; }
+.person-node[data-slot-index="6"] { left: 90% !important; right: auto !important; top: 52.2% !important; }
+.person-node[data-slot-index="7"] { left: 97% !important; right: auto !important; top: 70.7% !important; }
+
+/* Subtle embedded look, not the large glow that caused visual overlap. */
+.portrait-frame {
+  overflow: visible !important;
+  isolation: isolate;
+}
+
+.portrait-frame::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 108%;
+  height: .72rem;
+  border-radius: 999px;
+  pointer-events: none;
+  opacity: .34;
+  z-index: -1;
+  background:
+    linear-gradient(90deg, transparent, rgba(255, 235, 178, .48), rgba(255, 248, 220, .64), rgba(255, 235, 178, .48), transparent),
+    radial-gradient(circle at 50% 50%, rgba(255, 230, 160, .18), transparent 70%);
+  filter: blur(3px);
+  mix-blend-mode: screen;
+}
+
+.person-node.is-top .portrait-frame::after { bottom: -.26rem; }
+.person-node.is-bottom .portrait-frame::after { top: -.26rem; }
+
+.person-node::before {
+  content: "" !important;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2.2rem;
+  height: .42rem;
+  border-radius: 999px;
+  opacity: .24;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(255, 234, 176, .42), rgba(255, 217, 122, .10), transparent 72%);
+  filter: blur(4px);
+}
+
+.person-node.is-top::before { top: calc(100% + .15rem); }
+.person-node.is-bottom::before { bottom: calc(100% + .15rem); }
+
+.portrait-frame {
+  width: var(--photo-w, 4.8rem) !important;
+}
+
+.person-name {
+  max-width: 6.05rem !important;
+}
+
+/* iPad / tablet */
+@media (max-width: 1180px) {
+  .human-fabric-svg { top: 46.7vh !important; height: 28vh !important; }
+  .gold-network-svg { top: 48.7vh !important; height: 24vh !important; }
+
+  .person-node[data-slot-index="0"] { left: 10.5% !important; top: 52.5% !important; }
+  .person-node[data-slot-index="1"] { left: 23.5% !important; top: 69.5% !important; }
+  .person-node[data-slot-index="2"] { left: 36.5% !important; top: 52.5% !important; }
+  .person-node[data-slot-index="3"] { left: 49.5% !important; top: 69.5% !important; }
+  .person-node[data-slot-index="4"] { left: 62.5% !important; top: 52.5% !important; }
+  .person-node[data-slot-index="5"] { left: 75.5% !important; top: 69.5% !important; }
+  .person-node[data-slot-index="6"] { left: 88.5% !important; top: 52.5% !important; }
+  .person-node[data-slot-index="7"] { left: 96% !important; top: 69.5% !important; }
+}
+
+/* iPad portrait */
+@media (max-width: 900px) {
+  .hero-title { top: .55rem !important; }
+  .hero-poem .poem-panel { width: min(88vw, 32rem) !important; min-height: 6.4rem !important; }
+  .human-fabric-svg { top: 45.5vh !important; height: 25vh !important; opacity: .76 !important; }
+  .gold-network-svg { top: 47.2vh !important; height: 22vh !important; }
+
+  .person-node[data-slot-index="0"] { left: 14% !important; top: 52% !important; }
+  .person-node[data-slot-index="1"] { left: 32% !important; top: 66.5% !important; }
+  .person-node[data-slot-index="2"] { left: 50% !important; top: 52% !important; }
+  .person-node[data-slot-index="3"] { left: 68% !important; top: 66.5% !important; }
+  .person-node[data-slot-index="4"] { left: 86% !important; top: 52% !important; }
+  .person-node[data-slot-index="5"] { left: 96% !important; top: 66.5% !important; }
+}
+
+/* Phones */
+@media (max-width: 760px) {
+  .hero-title { top: .35rem !important; }
+  .hero-poem .poem-panel {
+    width: min(92vw, 28rem) !important;
+    min-height: 5.8rem !important;
+    padding: .7rem .75rem .58rem !important;
+  }
+  .hero-poem .poem-panel p { font-size: clamp(.76rem, 2.8vw, .92rem) !important; }
+  .human-fabric-svg { top: 43.5vh !important; height: 21vh !important; opacity: .68 !important; }
+  .gold-network-svg { top: 45.2vh !important; height: 18vh !important; }
+
+  .person-node[data-slot-index="0"] { left: 16% !important; top: 49.5% !important; }
+  .person-node[data-slot-index="1"] { left: 34% !important; top: 62.8% !important; }
+  .person-node[data-slot-index="2"] { left: 52% !important; top: 49.5% !important; }
+  .person-node[data-slot-index="3"] { left: 70% !important; top: 62.8% !important; }
+  .person-node[data-slot-index="4"] { left: 88% !important; top: 49.5% !important; }
+  .person-node[data-slot-index="5"] { left: 96% !important; top: 62.8% !important; }
+}
+
+
+/* ==========================================================
+   V11 final overlap fix:
+   lower timeline / tissue / portraits under the poem plaque
+   ========================================================== */
+
+.human-fabric-svg {
+  position: absolute;
+  left: 4vw !important;
+  right: 4vw !important;
+  width: 92vw !important;
+  top: 50vh !important;
+  height: 21vh !important;
+  z-index: 6 !important;
+  pointer-events: none;
+  overflow: visible !important;
+}
+
+.gold-network-svg {
+  position: absolute;
+  left: 4vw !important;
+  right: 4vw !important;
+  width: 92vw !important;
+  top: 51.5vh !important;
+  height: 18vh !important;
+  z-index: 7 !important;
+  pointer-events: none;
+  overflow: visible !important;
+}
+
+/* Portrait Grid Slots - lowered to clear the poem fully */
+.person-node[data-slot-index="0"] { left: 88% !important; right: auto !important; top: 55% !important; }
+.person-node[data-slot-index="1"] { left: 76% !important; right: auto !important; top: 73% !important; }
+.person-node[data-slot-index="2"] { left: 63% !important; right: auto !important; top: 55% !important; }
+.person-node[data-slot-index="3"] { left: 51% !important; right: auto !important; top: 73% !important; }
+.person-node[data-slot-index="4"] { left: 38% !important; right: auto !important; top: 55% !important; }
+.person-node[data-slot-index="5"] { left: 26% !important; right: auto !important; top: 73% !important; }
+.person-node[data-slot-index="6"] { left: 13% !important; right: auto !important; top: 55% !important; }
+.person-node[data-slot-index="7"] { left: 4% !important; right: auto !important; top: 73% !important; }
+
+/* Keep people above the lines, while the tissue remains connected behind them. */
+.timeline-layer {
+  z-index: 15 !important;
+}
+
+.person-node {
+  z-index: 24 !important;
+}
+
+.person-node.is-visible {
+  opacity: 1;
+}
+
+/* Reduce merge/glow so it does not visually climb into the poem area. */
+.portrait-frame::after {
+  opacity: .26 !important;
+  height: .8rem !important;
+  filter: blur(4px) !important;
+}
+
+.person-node::before,
+.person-node::after {
+  opacity: .24 !important;
+}
+
+/* Tablet Responsive Breakpoint */
+@media (min-width: 761px) and (max-width: 1200px) {
+  .human-fabric-svg {
+    top: 50vh !important;
+    left: 4vw !important;
+    right: 4vw !important;
+    width: 92vw !important;
+  }
+
+  .gold-network-svg {
+    top: 51.5vh !important;
+    left: 4vw !important;
+    right: 4vw !important;
+    width: 92vw !important;
+  }
+
+  .person-node[data-slot-index="0"] { left: 88% !important; right: auto !important; top: 55% !important; }
+  .person-node[data-slot-index="1"] { left: 76% !important; right: auto !important; top: 73% !important; }
+  .person-node[data-slot-index="2"] { left: 63% !important; right: auto !important; top: 55% !important; }
+  .person-node[data-slot-index="3"] { left: 51% !important; right: auto !important; top: 73% !important; }
+  .person-node[data-slot-index="4"] { left: 38% !important; right: auto !important; top: 55% !important; }
+  .person-node[data-slot-index="5"] { left: 26% !important; right: auto !important; top: 73% !important; }
+  .person-node[data-slot-index="6"] { left: 13% !important; right: auto !important; top: 55% !important; }
+  .person-node[data-slot-index="7"] { left: 4% !important; right: auto !important; top: 73% !important; }
+}
+
+/* Mobile Phone Breakpoint */
+@media (max-width: 760px) {
+  .human-fabric-svg {
+    top: 51vh !important;
+    height: 21vh !important;
+    left: 4vw !important;
+    right: 4vw !important;
+    width: 92vw !important;
+  }
+
+  .gold-network-svg {
+    top: 52.5vh !important;
+    height: 17vh !important;
+    left: 4vw !important;
+    right: 4vw !important;
+    width: 92vw !important;
+  }
+
+  .person-node[data-slot-index="0"] { left: 14% !important; right: auto !important; top: 58% !important; }
+  .person-node[data-slot-index="1"] { left: 32% !important; right: auto !important; top: 72.5% !important; }
+  .person-node[data-slot-index="2"] { left: 50% !important; right: auto !important; top: 58% !important; }
+  .person-node[data-slot-index="3"] { left: 68% !important; right: auto !important; top: 72.5% !important; }
+  .person-node[data-slot-index="4"] { left: 86% !important; right: auto !important; top: 58% !important; }
+  .person-node[data-slot-index="5"] { left: 96% !important; right: auto !important; top: 72.5% !important; }
+
+  .portrait-frame {
+    width: 3.5rem !important;
+  }
+
+  .person-name {
+    max-width: 4.6rem !important;
+    font-size: .52rem !important;
+  }
+}
+
+
+/* ==========================================================
+   V12: EXACT ATTACHED LAYOUT, ART-DECO DESIGN
+   This final layer intentionally overrides all previous position attempts.
+   It matches the attached ONLINE_ENRICHED layout: poem top, two-row people,
+   line/tissue through the middle.
+   ========================================================== */
+
+/* Match the attached version vertical composition */
+.hero-title {
+  top: clamp(5.3rem, 8vh, 6.6rem) !important;
+  z-index: 80 !important;
+}
+
+.hero-poem .poem-panel {
+  width: min(48rem, 72vw) !important;
+  min-height: 7.25rem !important;
+  padding: .95rem 1.55rem .9rem !important;
+  border-radius: 1.25rem !important;
+  background:
+    radial-gradient(circle at 50% 15%, rgba(255, 225, 143, .09), transparent 42%),
+    linear-gradient(180deg, rgba(58, 48, 34, .90), rgba(24, 22, 20, .94)) !important;
+  border: 1.5px solid rgba(226, 183, 90, .68) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 239, 188, .10),
+    inset 0 0 26px rgba(0,0,0,.45),
+    0 0 0 1px rgba(82, 54, 24, .88),
+    0 0 24px rgba(255, 205, 101, .18),
+    0 14px 36px rgba(0,0,0,.38) !important;
+}
+
+.hero-poem .poem-panel p,
+.hero-poem p {
+  font-size: clamp(.96rem, 1.18vw, 1.18rem) !important;
+  line-height: 1.34 !important;
+  color: #f4e8c4 !important;
+}
+
+/* The attached layout uses the line/tissue through the portrait field */
+.human-fabric-svg {
+  position: absolute !important;
+  left: 0 !important;
+  right: 0 !important;
+  top: 56.5% !important;
+  width: 100vw !important;
+  height: min(28vh, 18rem) !important;
+  transform: translateY(-50%) !important;
+  z-index: 4 !important;
+  pointer-events: none !important;
+  overflow: visible !important;
+  opacity: .78 !important;
+}
+
+.gold-network-svg {
+  position: absolute !important;
+  left: 0 !important;
+  right: 0 !important;
+  top: 62% !important;
+  width: 100vw !important;
+  height: min(28vh, 18rem) !important;
+  transform: translateY(-50%) !important;
+  z-index: 3 !important;
+  pointer-events: none !important;
+  overflow: visible !important;
+  opacity: .55 !important;
+}
+
+/* If old heartbeat SVG still exists, keep it hidden under the art-deco tissue */
+.heartbeat-svg {
+  top: 62% !important;
+  height: min(28vh, 18rem) !important;
+}
+
+/* IMPORTANT: right-based RTL positioning, exactly like the attached version */
+.timeline-layer {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 10 !important;
+}
+
+.person-node {
+  position: absolute !important;
+  translate: 50% -50% !important;
+  width: var(--node-w, 8rem) !important;
+  z-index: 20 !important;
+}
+
+/* Attached layout coordinates */
+.person-node[data-slot-index="0"] { right: 16% !important; left: auto !important; top: 58% !important; }
+.person-node[data-slot-index="1"] { right: 28% !important; left: auto !important; top: 80% !important; }
+.person-node[data-slot-index="2"] { right: 40% !important; left: auto !important; top: 58% !important; }
+.person-node[data-slot-index="3"] { right: 52% !important; left: auto !important; top: 80% !important; }
+.person-node[data-slot-index="4"] { right: 64% !important; left: auto !important; top: 58% !important; }
+.person-node[data-slot-index="5"] { right: 76% !important; left: auto !important; top: 80% !important; }
+.person-node[data-slot-index="6"] { right: 88% !important; left: auto !important; top: 58% !important; }
+.person-node[data-slot-index="7"] { right: 8% !important;  left: auto !important; top: 80% !important; }
+
+/* Restore clean portrait proportions and remove the oversized merge glow */
+.portrait-frame {
+  width: var(--photo-w, 6.8rem) !important;
+  aspect-ratio: 1 !important;
+  border-radius: 999px !important;
+  padding: .28rem !important;
+  overflow: hidden !important;
+  background:
+    radial-gradient(circle at 40% 18%, rgba(255,249,225,.95), transparent 15%),
+    conic-gradient(from 210deg, #5f421e, #f2d78f, #8b5b24, #ffefb7, #6a461c, #d1a04c, #5f421e) !important;
+  border: 1px solid rgba(255, 226, 146, .68) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.18),
+    0 0 0 .10rem rgba(69, 46, 21, .88),
+    0 0 0 .18rem rgba(221, 176, 77, .32),
+    0 0 22px rgba(255, 207, 102, .20),
+    0 14px 24px rgba(0,0,0,.32) !important;
+}
+
+.portrait-frame::after,
+.person-node::after {
+  opacity: .30 !important;
+  width: 2.8rem !important;
+  height: .9rem !important;
+  filter: blur(7px) !important;
+}
+
+.person-node::before {
+  opacity: .55 !important;
+}
+
+/* Name tags matching attached placement but art-deco color */
+.person-name {
+  margin-top: .22rem !important;
+  max-width: 7rem !important;
+  padding: .36rem .62rem .34rem !important;
+  border-radius: .55rem !important;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255,232,158,.18), transparent 55%),
+    linear-gradient(180deg, rgba(92, 66, 32, .96), rgba(39, 31, 22, .95)) !important;
+  border: 1px solid rgba(226, 183, 90, .46) !important;
+  color: #f6eac8 !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 248, 205, .08),
+    0 8px 18px rgba(0,0,0,.26) !important;
+  font-size: clamp(.68rem, .78vw, .86rem) !important;
+  line-height: 1.08 !important;
+}
+
+.person-name span {
+  white-space: normal !important;
+}
+
+/* Top controls like the attached layout, but with the art-deco palette */
+.top-bar {
+  position: fixed !important;
+  z-index: 120 !important;
+  inset-inline: 0 !important;
+  top: 0 !important;
+  bottom: auto !important;
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 1rem !important;
+  padding: 1rem clamp(1rem, 3vw, 2rem) !important;
+  background: linear-gradient(180deg, rgba(5,16,29,.86), rgba(5,16,29,0)) !important;
+  pointer-events: none !important;
+}
+
+.top-bar > * {
+  pointer-events: auto !important;
+}
+
+.search-box {
+  width: min(22rem, 37vw) !important;
+  height: auto !important;
+  padding: .62rem .98rem !important;
+}
+
+.filter-box select {
+  height: auto !important;
+  padding: .62rem .98rem !important;
+}
+
+.ghost-btn,
+.search-box,
+.filter-box select {
+  border-color: rgba(226, 183, 90, .34) !important;
+  background: rgba(24, 22, 20, .54) !important;
+  color: #f4e8c4 !important;
+  box-shadow: 0 10px 30px rgba(0, 5, 14, .22) !important;
+}
+
+/* Tablet - keep exact attached spacing */
+@media (min-width: 761px) and (max-width: 1200px) {
+  .hero-title {
+    top: clamp(5rem, 7.5vh, 6rem) !important;
+  }
+
+  .human-fabric-svg {
+    top: 56.5% !important;
+    height: min(28vh, 17rem) !important;
+  }
+
+  .gold-network-svg {
+    top: 62% !important;
+    height: min(28vh, 17rem) !important;
+  }
+
+  .person-node[data-slot-index="0"] { right: 16% !important; left: auto !important; top: 58% !important; }
+  .person-node[data-slot-index="1"] { right: 28% !important; left: auto !important; top: 80% !important; }
+  .person-node[data-slot-index="2"] { right: 40% !important; left: auto !important; top: 58% !important; }
+  .person-node[data-slot-index="3"] { right: 52% !important; left: auto !important; top: 80% !important; }
+  .person-node[data-slot-index="4"] { right: 64% !important; left: auto !important; top: 58% !important; }
+  .person-node[data-slot-index="5"] { right: 76% !important; left: auto !important; top: 80% !important; }
+  .person-node[data-slot-index="6"] { right: 88% !important; left: auto !important; top: 58% !important; }
+  .person-node[data-slot-index="7"] { right: 8% !important; left: auto !important; top: 80% !important; }
+}
+
+/* Mobile - same attached staggered logic, scaled down */
+@media (max-width: 760px) {
+  .hero-title {
+    top: 7.35rem !important;
+  }
+
+  .hero-poem .poem-panel {
+    width: min(28rem, 86vw) !important;
+    min-height: auto !important;
+    padding: .72rem .9rem !important;
+  }
+
+  .hero-poem .poem-panel p,
+  .hero-poem p {
+    font-size: clamp(.78rem, 2.65vw, .96rem) !important;
+    line-height: 1.28 !important;
+  }
+
+  .human-fabric-svg {
+    top: 61% !important;
+    height: 22vh !important;
+  }
+
+  .gold-network-svg {
+    top: 66% !important;
+    height: 20vh !important;
+  }
+
+  .person-node[data-slot-index="0"] { right: 14% !important; left: auto !important; top: 60% !important; }
+  .person-node[data-slot-index="1"] { right: 28% !important; left: auto !important; top: 81% !important; }
+  .person-node[data-slot-index="2"] { right: 42% !important; left: auto !important; top: 60% !important; }
+  .person-node[data-slot-index="3"] { right: 56% !important; left: auto !important; top: 81% !important; }
+  .person-node[data-slot-index="4"] { right: 70% !important; left: auto !important; top: 60% !important; }
+  .person-node[data-slot-index="5"] { right: 84% !important; left: auto !important; top: 81% !important; }
+
+  .top-bar {
+    padding: .75rem .75rem !important;
+    gap: .5rem !important;
+    flex-wrap: wrap !important;
+  }
+
+  .search-box {
+    width: min(19rem, 78vw) !important;
+  }
+
+  .controls {
+    gap: .4rem !important;
+  }
+}
+
+
+/* ==========================================================
+   V11 final overlap fix:
+   lower timeline / tissue / portraits under the poem plaque
+   ========================================================== */
+
+.human-fabric-svg {
+  position: absolute;
+  left: 4vw !important;
+  right: 4vw !important;
+  width: 92vw !important;
+  top: 50vh !important;
+  height: 21vh !important;
+  z-index: 6 !important;
+  pointer-events: none;
+  overflow: visible !important;
+}
+
+.gold-network-svg {
+  position: absolute;
+  left: 4vw !important;
+  right: 4vw !important;
+  width: 92vw !important;
+  top: 51.5vh !important;
+  height: 18vh !important;
+  z-index: 7 !important;
+  pointer-events: none;
+  overflow: visible !important;
+}
+
+/* Portrait Grid Slots - lowered to clear the poem fully */
+.person-node[data-slot-index="0"] { left: 88% !important; right: auto !important; top: 55% !important; }
+.person-node[data-slot-index="1"] { left: 76% !important; right: auto !important; top: 73% !important; }
+.person-node[data-slot-index="2"] { left: 63% !important; right: auto !important; top: 55% !important; }
+.person-node[data-slot-index="3"] { left: 51% !important; right: auto !important; top: 73% !important; }
+.person-node[data-slot-index="4"] { left: 38% !important; right: auto !important; top: 55% !important; }
+.person-node[data-slot-index="5"] { left: 26% !important; right: auto !important; top: 73% !important; }
+.person-node[data-slot-index="6"] { left: 13% !important; right: auto !important; top: 55% !important; }
+.person-node[data-slot-index="7"] { left: 4% !important; right: auto !important; top: 73% !important; }
+
+/* Keep people above the lines, while the tissue remains connected behind them. */
+.timeline-layer {
+  z-index: 15 !important;
+}
+
+.person-node {
+  z-index: 24 !important;
+}
+
+.person-node.is-visible {
+  opacity: 1;
+}
+
+/* Reduce merge/glow so it does not visually climb into the poem area. */
+.portrait-frame::after {
+  opacity: .26 !important;
+  height: .8rem !important;
+  filter: blur(4px) !important;
+}
+
+.person-node::before,
+.person-node::after {
+  opacity: .24 !important;
+}
+
+/* Tablet Responsive Breakpoint */
+@media (min-width: 761px) and (max-width: 1200px) {
+  .human-fabric-svg {
+    top: 50vh !important;
+    left: 4vw !important;
+    right: 4vw !important;
+    width: 92vw !important;
+  }
+
+  .gold-network-svg {
+    top: 51.5vh !important;
+    left: 4vw !important;
+    right: 4vw !important;
+    width: 92vw !important;
+  }
+
+  .person-node[data-slot-index="0"] { left: 88% !important; right: auto !important; top: 55% !important; }
+  .person-node[data-slot-index="1"] { left: 76% !important; right: auto !important; top: 73% !important; }
+  .person-node[data-slot-index="2"] { left: 63% !important; right: auto !important; top: 55% !important; }
+  .person-node[data-slot-index="3"] { left: 51% !important; right: auto !important; top: 73% !important; }
+  .person-node[data-slot-index="4"] { left: 38% !important; right: auto !important; top: 55% !important; }
+  .person-node[data-slot-index="5"] { left: 26% !important; right: auto !important; top: 73% !important; }
+  .person-node[data-slot-index="6"] { left: 13% !important; right: auto !important; top: 55% !important; }
+  .person-node[data-slot-index="7"] { left: 4% !important; right: auto !important; top: 73% !important; }
+}
+
+/* Mobile Phone Breakpoint */
+@media (max-width: 760px) {
+  .human-fabric-svg {
+    top: 51vh !important;
+    height: 21vh !important;
+    left: 4vw !important;
+    right: 4vw !important;
+    width: 92vw !important;
+  }
+
+  .gold-network-svg {
+    top: 52.5vh !important;
+    height: 17vh !important;
+    left: 4vw !important;
+    right: 4vw !important;
+    width: 92vw !important;
+  }
+
+  .person-node[data-slot-index="0"] { left: 14% !important; right: auto !important; top: 58% !important; }
+  .person-node[data-slot-index="1"] { left: 32% !important; right: auto !important; top: 72.5% !important; }
+  .person-node[data-slot-index="2"] { left: 50% !important; right: auto !important; top: 58% !important; }
+  .person-node[data-slot-index="3"] { left: 68% !important; right: auto !important; top: 72.5% !important; }
+  .person-node[data-slot-index="4"] { left: 86% !important; right: auto !important; top: 58% !important; }
+  .person-node[data-slot-index="5"] { left: 96% !important; right: auto !important; top: 72.5% !important; }
+
+  .portrait-frame {
+    width: 3.5rem !important;
+  }
+
+  .person-name {
+    max-width: 4.6rem !important;
+    font-size: .52rem !important;
+  }
+}
+
+
+/* ==========================================================
+   V13 refinements:
+   - portraits sit a little more "inside" the tissue
+   - tissue looks softer / more premium / less crowded
+   - poem lines have more breathing room
+   ========================================================== */
+
+/* Poem: add more vertical breathing room between lines */
+.hero-poem .poem-panel p {
+  gap: .42rem !important;
+  line-height: 1.58 !important;
+}
+.hero-poem .poem-panel span {
+  display: block;
+}
+
+/* Lower the tissue slightly and make it more airy */
+.human-fabric-svg {
+  top: 60.5% !important;
+  height: min(31vh, 19rem) !important;
+  opacity: .92 !important;
+}
+
+/* First 6 are the flatter base strands: make them lighter and more spaced-feeling */
+.human-fabric-svg .fabric-threads path:nth-child(-n+6) {
+  stroke: url(#fabricGold) !important;
+  stroke-width: 1.15 !important;
+  opacity: .24 !important;
+  filter: drop-shadow(0 0 2px rgba(255,230,160,.18));
+}
+
+/* Curved strands feel more like woven tissue */
+.human-fabric-svg .fabric-threads path:nth-child(n+7) {
+  stroke: url(#fabricGold) !important;
+  stroke-width: 1.38 !important;
+  opacity: .48 !important;
+  filter:
+    drop-shadow(0 0 3px rgba(255, 235, 180, .22))
+    drop-shadow(0 0 10px rgba(232, 189, 96, .10)) !important;
+}
+
+/* Subtle variation so lines do not feel too packed */
+.human-fabric-svg .fabric-threads path:nth-child(2n) {
+  opacity: .34 !important;
+}
+.human-fabric-svg .fabric-threads path:nth-child(3n) {
+  opacity: .42 !important;
+}
+.human-fabric-svg .fabric-threads path:nth-child(5n) {
+  opacity: .28 !important;
+}
+
+/* Gold overlay strands: slightly softer so tissue remains elegant */
+.gold-network-svg {
+  top: 60.7% !important;
+  height: min(23vh, 14rem) !important;
+  opacity: .60 !important;
+}
+.gold-network-svg .threads path {
+  stroke-width: 1.02 !important;
+  opacity: .60 !important;
+}
+.gold-network-svg .threads path:nth-child(2n) {
+  opacity: .48 !important;
+}
+.gold-network-svg .threads path:nth-child(3n) {
+  opacity: .40 !important;
+}
+.gold-network-svg .thread-dots circle {
+  opacity: .58 !important;
+}
+
+/* Portraits: move slightly closer to / more merged with the tissue */
+.person-node[data-slot-index="0"] { top: 60% !important; }
+.person-node[data-slot-index="1"] { top: 77% !important; }
+.person-node[data-slot-index="2"] { top: 60% !important; }
+.person-node[data-slot-index="3"] { top: 77% !important; }
+.person-node[data-slot-index="4"] { top: 60% !important; }
+.person-node[data-slot-index="5"] { top: 77% !important; }
+.person-node[data-slot-index="6"] { top: 60% !important; }
+.person-node[data-slot-index="7"] { top: 77% !important; }
+
+/* Small connective glow so portraits visually sit in the tissue */
+.person-node::after {
+  width: 3.4rem !important;
+  height: 1.25rem !important;
+  opacity: .82 !important;
+  filter: blur(9px) !important;
+  background: radial-gradient(circle, rgba(255, 220, 134, .52), rgba(255, 220, 134, .14), transparent 72%) !important;
+}
+.person-node.is-top::after {
+  top: calc(100% - .1rem) !important;
+}
+.person-node.is-bottom::after {
+  bottom: calc(100% - .1rem) !important;
+}
+
+/* Slightly soften the portrait frame glow so it blends into the strands */
+.portrait-frame {
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.18),
+    0 0 0 .12rem rgba(69, 46, 21, .90),
+    0 0 0 .2rem rgba(221, 176, 77, .26),
+    0 0 20px rgba(255, 207, 102, .18),
+    0 12px 20px rgba(0,0,0,.28) !important;
+}
+
+/* Responsive refinements */
+@media (min-width: 761px) and (max-width: 1200px) {
+  .human-fabric-svg {
+    top: 61% !important;
+    height: min(28vh, 17rem) !important;
+  }
+  .gold-network-svg {
+    top: 61.1% !important;
+    height: min(21vh, 12.5rem) !important;
+  }
+  .person-node[data-slot-index="0"],
+  .person-node[data-slot-index="2"],
+  .person-node[data-slot-index="4"],
+  .person-node[data-slot-index="6"] { top: 60.8% !important; }
+  .person-node[data-slot-index="1"],
+  .person-node[data-slot-index="3"],
+  .person-node[data-slot-index="5"],
+  .person-node[data-slot-index="7"] { top: 77.8% !important; }
+}
+
+@media (max-width: 760px) {
+  .hero-poem .poem-panel p {
+    gap: .28rem !important;
+    line-height: 1.46 !important;
+  }
+  .human-fabric-svg {
+    top: 64.2% !important;
+    height: 22vh !important;
+  }
+  .gold-network-svg {
+    top: 64.5% !important;
+    height: 17vh !important;
+  }
+  .person-node[data-slot-index="0"],
+  .person-node[data-slot-index="2"],
+  .person-node[data-slot-index="4"] { top: 62% !important; }
+  .person-node[data-slot-index="1"],
+  .person-node[data-slot-index="3"],
+  .person-node[data-slot-index="5"] { top: 79.5% !important; }
+}
