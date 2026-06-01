@@ -119,3 +119,11 @@ V4 synced final:
 - Mobile search is between poem and people cards; controls are at the bottom.
 - Mobile portrait grid spacing fixed to avoid overlapping cards/names.
 - Images folder omitted by request.
+
+
+V5 mobile polish:
+- Search stays between poem and portraits but no longer overlaps portraits.
+- Portrait rows have more vertical breathing room.
+- Portrait/text scale refined for mobile readability.
+- Poem decorative badge no longer covers first line.
+- Images folder omitted by request.

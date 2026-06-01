@@ -4247,3 +4247,188 @@ body {
       0 12px 22px rgba(0,0,0,.34) !important;
   }
 }
+
+
+/* ==========================================================
+   V5 mobile polish:
+   - search stays between poem and portraits but no longer touches the portraits
+   - portraits are slightly more balanced on small screens
+   - more vertical breathing between the two portrait rows
+   - poem decoration no longer covers the first line
+   ========================================================== */
+
+@media (max-width: 900px) and (orientation: portrait) {
+  /* Keep poem readable and prevent the heart/decorative badge from covering line 1 */
+  .hero-poem .poem-panel {
+    padding-top: 1rem !important;
+    padding-bottom: .8rem !important;
+  }
+
+  .hero-poem .poem-panel p {
+    position: relative !important;
+    z-index: 3 !important;
+    gap: .25rem !important;
+    line-height: 1.38 !important;
+  }
+
+  .hero-poem .poem-panel::before {
+    width: 1.68rem !important;
+    height: 1.68rem !important;
+    top: -.62rem !important;
+    font-size: .92rem !important;
+    z-index: 1 !important;
+    opacity: .96 !important;
+  }
+
+  /* Search is now clearly between poem and card grid */
+  .search-box {
+    top: 35.2% !important;
+    width: min(86vw, 22.5rem) !important;
+    height: 2.48rem !important;
+    padding: .36rem .78rem !important;
+    border-radius: 1.15rem !important;
+  }
+
+  .search-box input {
+    font-size: .88rem !important;
+  }
+
+  /* Move people slightly down and increase row spacing */
+  .person-node[data-slot-index="0"] { right: 18% !important; left: auto !important; top: 54.2% !important; }
+  .person-node[data-slot-index="1"] { right: 18% !important; left: auto !important; top: 72.8% !important; }
+  .person-node[data-slot-index="2"] { right: 50% !important; left: auto !important; top: 54.2% !important; }
+  .person-node[data-slot-index="3"] { right: 50% !important; left: auto !important; top: 72.8% !important; }
+  .person-node[data-slot-index="4"] { right: 82% !important; left: auto !important; top: 54.2% !important; }
+  .person-node[data-slot-index="5"] { right: 82% !important; left: auto !important; top: 72.8% !important; }
+  .person-node[data-slot-index="6"] { right: 34% !important; left: auto !important; top: 78.6% !important; }
+  .person-node[data-slot-index="7"] { right: 66% !important; left: auto !important; top: 78.6% !important; }
+
+  .human-fabric-svg {
+    top: 65.2% !important;
+    height: 20vh !important;
+    opacity: .84 !important;
+  }
+
+  .gold-network-svg,
+  .heartbeat-svg {
+    top: 65.6% !important;
+    height: 16vh !important;
+  }
+
+  .timeline-stage::before {
+    top: 65.4% !important;
+    height: 20vh !important;
+  }
+
+  .timeline-stage::after {
+    top: 65.8% !important;
+    height: 14vh !important;
+  }
+
+  /* Slightly calmer card scale so labels never collide with the second row */
+  .person-node {
+    width: 5.35rem !important;
+  }
+
+  .portrait-frame {
+    width: 4.08rem !important;
+    padding: .21rem !important;
+  }
+
+  .person-button {
+    gap: .34rem !important;
+  }
+
+  .person-name {
+    max-width: 5.05rem !important;
+    padding: .27rem .36rem .25rem !important;
+    font-size: .55rem !important;
+    line-height: 1.05 !important;
+    border-radius: .50rem !important;
+    z-index: 8 !important;
+  }
+
+  /* Prevent labels from wrapping too tall on very narrow screens */
+  .person-name span {
+    overflow-wrap: anywhere !important;
+  }
+
+  .portrait-placeholder {
+    font-size: clamp(.86rem, 4.5vw, 1.18rem) !important;
+  }
+
+  /* Keep buttons usable but a bit more refined */
+  .controls {
+    width: min(91vw, 27rem) !important;
+    gap: .50rem !important;
+  }
+
+  .ghost-btn {
+    height: 2.62rem !important;
+    font-size: .88rem !important;
+    border-radius: .78rem !important;
+  }
+}
+
+/* Very small / short phones */
+@media (max-width: 900px) and (orientation: portrait) and (max-height: 740px) {
+  .search-box {
+    top: 34.2% !important;
+    height: 2.32rem !important;
+  }
+
+  .person-node[data-slot-index="0"],
+  .person-node[data-slot-index="2"],
+  .person-node[data-slot-index="4"] {
+    top: 53.4% !important;
+  }
+
+  .person-node[data-slot-index="1"],
+  .person-node[data-slot-index="3"],
+  .person-node[data-slot-index="5"] {
+    top: 71.4% !important;
+  }
+
+  .human-fabric-svg { top: 64.4% !important; height: 19vh !important; }
+  .gold-network-svg,
+  .heartbeat-svg { top: 64.8% !important; height: 15vh !important; }
+
+  .portrait-frame {
+    width: 3.86rem !important;
+  }
+
+  .person-node {
+    width: 5.05rem !important;
+  }
+
+  .person-name {
+    font-size: .51rem !important;
+    max-width: 4.8rem !important;
+    padding: .23rem .31rem .22rem !important;
+  }
+
+  .ghost-btn {
+    height: 2.42rem !important;
+    font-size: .82rem !important;
+  }
+}
+
+/* Slightly wider phones get a touch more size without overlap */
+@media (min-width: 390px) and (max-width: 900px) and (orientation: portrait) {
+  .search-box {
+    top: 35.6% !important;
+  }
+
+  .person-node {
+    width: 5.65rem !important;
+  }
+
+  .portrait-frame {
+    width: 4.32rem !important;
+  }
+
+  .person-name {
+    max-width: 5.25rem !important;
+    font-size: .58rem !important;
+  }
+}

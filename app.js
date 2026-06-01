@@ -18,12 +18,12 @@ const DESKTOP_POINTS = [
 ];
 
 const MOBILE_POINTS = [
-  { x: 18, y: 50.8, side: "top", size: .62 },
-  { x: 18, y: 69.6, side: "bottom", size: .58 },
-  { x: 50, y: 50.8, side: "top", size: .62 },
-  { x: 50, y: 69.6, side: "bottom", size: .58 },
-  { x: 82, y: 50.8, side: "top", size: .62 },
-  { x: 82, y: 69.6, side: "bottom", size: .58 },
+  { x: 18, y: 54.2, side: "top", size: .60 },
+  { x: 18, y: 72.8, side: "bottom", size: .56 },
+  { x: 50, y: 54.2, side: "top", size: .60 },
+  { x: 50, y: 72.8, side: "bottom", size: .56 },
+  { x: 82, y: 54.2, side: "top", size: .60 },
+  { x: 82, y: 72.8, side: "bottom", size: .56 },
 ];
 
 const state = {
