@@ -127,3 +127,11 @@ V5 mobile polish:
 - Portrait/text scale refined for mobile readability.
 - Poem decorative badge no longer covers first line.
 - Images folder omitted by request.
+
+
+V6 mobile rechecked:
+- Better mobile vertical composition.
+- Search no longer touches top portraits.
+- More spacing between top-row labels and lower-row portraits.
+- Portrait size tuned for 320px and larger phones.
+- Modal/story mobile protection improved.
