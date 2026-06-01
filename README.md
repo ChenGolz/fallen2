@@ -135,3 +135,22 @@ V6 mobile rechecked:
 - More spacing between top-row labels and lower-row portraits.
 - Portrait size tuned for 320px and larger phones.
 - Modal/story mobile protection improved.
+
+
+Excel summaries update:
+- Integrated 85 not-too-short summaries from the uploaded Excel-derived summary JSON.
+- Matched every person to their Excel row and wrote summary_match_report.csv.
+- Updated data.json and data.js.
+- Added cache-busting query strings in index.html.
+- images/ folder omitted.
+
+
+Long Excel summaries + relatives update:
+- Rebuilt storySummary/storySummaryClean from the full Excel row content, with longer descriptions.
+- Updated first-degree family fields and relativesLines.
+- Added excel_long_summaries_and_relatives_report.csv for checking each row match.
+- Added cache busting version long-excel-relatives-v4.
+- images/ folder omitted.
+
+
+V11 polish: cleaned generic attack boilerplate from summaries and fixed several relation/summary edge cases.
