@@ -103,3 +103,8 @@ V17:
 - Mobile portrait only: reduced the empty space between the poem and portraits/tissue.
 - The poem stays at the top.
 - Bottom controls stay at the bottom.
+
+
+V18:
+- Mobile portrait only: enlarged toolbar, poem, tissue, portraits, and labels slightly.
+- Kept the V17 layout/positions unchanged.

@@ -3577,3 +3577,125 @@ body {
     top: 67.2% !important;
   }
 }
+
+
+/* ==========================================================
+   V18: mobile only — enlarge visual elements slightly.
+   No position changes: keeps the V17 layout, only improves clarity/size.
+   ========================================================== */
+@media (max-width: 900px) and (orientation: portrait) {
+  /* Toolbar: clearer tap targets and text */
+  .search-box,
+  .filter-box select,
+  .ghost-btn {
+    height: 2.55rem !important;
+    font-size: .88rem !important;
+  }
+
+  .search-box {
+    padding: .42rem .78rem !important;
+  }
+
+  .search-box input {
+    font-size: .88rem !important;
+  }
+
+  .filter-box select {
+    padding: .42rem .78rem !important;
+  }
+
+  .ghost-btn {
+    min-width: 4rem !important;
+    padding: .42rem .68rem !important;
+  }
+
+  #pause-btn {
+    min-width: 3.05rem !important;
+  }
+
+  /* Poem: same location, slightly larger and clearer */
+  .hero-poem .poem-panel {
+    width: min(36.5rem, 94vw) !important;
+    padding: .92rem 1.04rem .86rem !important;
+  }
+
+  .hero-poem .poem-panel p {
+    font-size: clamp(.86rem, 3.18vw, 1.08rem) !important;
+    line-height: 1.42 !important;
+    gap: .26rem !important;
+  }
+
+  .hero-poem .poem-panel::before {
+    width: 2.12rem !important;
+    height: 2.12rem !important;
+    font-size: 1.08rem !important;
+  }
+
+  /* Tissue: same center, a little taller/brighter so it fills space better */
+  .human-fabric-svg {
+    height: 23vh !important;
+    opacity: .92 !important;
+  }
+
+  .gold-network-svg {
+    height: 17.5vh !important;
+    opacity: .42 !important;
+  }
+
+  /* Portraits and labels: larger, clearer, same coordinates */
+  .person-node {
+    width: 6.15rem !important;
+  }
+
+  .portrait-frame {
+    width: 4.78rem !important;
+    padding: .25rem !important;
+  }
+
+  .person-name {
+    max-width: 5.95rem !important;
+    padding: .34rem .48rem .31rem !important;
+    font-size: .63rem !important;
+    line-height: 1.08 !important;
+  }
+
+  .person-node::after {
+    width: 2.75rem !important;
+    height: .86rem !important;
+    opacity: .56 !important;
+  }
+}
+
+/* Very short phones: still bigger than before, but slightly restrained to avoid crowding */
+@media (max-width: 900px) and (orientation: portrait) and (max-height: 740px) {
+  .search-box,
+  .filter-box select,
+  .ghost-btn {
+    height: 2.42rem !important;
+    font-size: .84rem !important;
+  }
+
+  .hero-poem .poem-panel {
+    width: min(36rem, 93vw) !important;
+    padding: .78rem .92rem .72rem !important;
+  }
+
+  .hero-poem .poem-panel p {
+    font-size: .82rem !important;
+    line-height: 1.34 !important;
+    gap: .2rem !important;
+  }
+
+  .person-node {
+    width: 5.85rem !important;
+  }
+
+  .portrait-frame {
+    width: 4.5rem !important;
+  }
+
+  .person-name {
+    max-width: 5.65rem !important;
+    font-size: .59rem !important;
+  }
+}
