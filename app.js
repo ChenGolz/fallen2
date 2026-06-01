@@ -344,7 +344,7 @@ function getPhotoSources(photo) {
 function createPortraitImage(person) {
   const sources = getPhotoSources(person.photo);
   const img = el("img", {
-    src: sources.src || "images/portrait_placeholder.svg",
+    src: sources.src || "",
     alt: `תמונה של ${formatDisplayName(person.name)}`,
     loading: "lazy",
     decoding: "async",
@@ -352,10 +352,18 @@ function createPortraitImage(person) {
 
   if (sources.srcset) img.setAttribute("srcset", sources.srcset);
 
+  // In the no-images package, image files are intentionally omitted.
+  // Replace missing images with an in-DOM initials placeholder instead of
+  // falling back to a missing SVG, which made Chrome display the full alt text
+  // inside the portrait circle and visually overlap the name tags on mobile.
   img.onerror = () => {
     img.onerror = null;
-    img.removeAttribute("srcset");
-    img.src = "images/portrait_placeholder.svg";
+    const fallback = el("span", {
+      class: "portrait-placeholder",
+      text: initials(person.name),
+      "aria-hidden": "true",
+    });
+    img.replaceWith(fallback);
   };
 
   return img;

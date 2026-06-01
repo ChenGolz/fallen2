@@ -3699,3 +3699,233 @@ body {
     font-size: .59rem !important;
   }
 }
+
+
+/* ==========================================================
+   MOBILE NAME-OVERLAP FIX + FINAL RESPONSIVE POLISH
+   Keeps functionality/layout, fixes top-row labels hiding behind lower portraits.
+   Images folder is intentionally omitted from the package; copy the existing
+   images/ folder next to these files when publishing/testing with real photos.
+   ========================================================== */
+
+@media (max-width: 900px) and (orientation: portrait) {
+  /* More stable mobile viewport behavior */
+  html,
+  body,
+  .memory-stage,
+  .timeline-stage {
+    min-height: 100svh !important;
+  }
+
+  @supports (height: 100dvh) {
+    html,
+    body,
+    .memory-stage,
+    .timeline-stage {
+      min-height: 100dvh !important;
+      height: 100dvh !important;
+    }
+  }
+
+  /* Top-row labels move ABOVE the portrait so they never hide behind row 2. */
+  .person-node.is-top .person-button {
+    display: flex !important;
+    flex-direction: column-reverse !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: .34rem !important;
+  }
+
+  .person-node.is-top .person-name {
+    margin-top: 0 !important;
+    margin-bottom: .12rem !important;
+    position: relative !important;
+    z-index: 9 !important;
+  }
+
+  .person-node.is-top .portrait-frame {
+    position: relative !important;
+    z-index: 6 !important;
+  }
+
+  .person-node.is-bottom .person-button {
+    display: grid !important;
+    justify-items: center !important;
+    gap: .34rem !important;
+  }
+
+  .person-node.is-bottom .person-name {
+    margin-top: .12rem !important;
+    margin-bottom: 0 !important;
+    position: relative !important;
+    z-index: 9 !important;
+  }
+
+  /* Keep all labels readable over tissue/heartbeat strands. */
+  .person-name {
+    backdrop-filter: blur(8px) saturate(1.1) !important;
+    -webkit-backdrop-filter: blur(8px) saturate(1.1) !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,.42) !important;
+  }
+
+  /* Prevent focus mode scaling from reintroducing overlap on small screens. */
+  .memory-stage.is-focus-mode .person-node.is-visible.is-focused,
+  .memory-stage.is-focus-mode .person-node.is-visible.is-related {
+    transform: translateY(0) scale(1.01) !important;
+  }
+
+  /* Story modal / detail card responsive safety: image and text do not overlap. */
+  .story-panel,
+  .story-card,
+  .person-detail,
+  .modal-card {
+    width: min(94vw, 42rem) !important;
+    max-width: 94vw !important;
+  }
+
+  .story-hero,
+  .detail-hero,
+  .profile-hero,
+  .story-layout,
+  .detail-layout {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+
+  .story-hero img,
+  .detail-hero img,
+  .profile-hero img,
+  .story-photo,
+  .detail-photo,
+  .profile-photo,
+  .story-image,
+  .detail-image {
+    width: min(82vw, 18rem) !important;
+    max-height: 42vh !important;
+    object-fit: cover !important;
+    justify-self: center !important;
+  }
+}
+
+@media (max-width: 900px) and (orientation: portrait) and (max-height: 740px) {
+  .person-node.is-top .person-button,
+  .person-node.is-bottom .person-button {
+    gap: .24rem !important;
+  }
+
+  .person-name {
+    line-height: 1.02 !important;
+  }
+}
+
+
+/* Art-deco mobile final tuning: preserves V18 positions/sizes. */
+@media (max-width: 900px) and (orientation: portrait) {
+  .person-node.is-top .person-name {
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 248, 205, .12),
+      0 8px 18px rgba(0,0,0,.30),
+      0 0 14px rgba(230, 188, 93, .16) !important;
+  }
+
+  .portrait-frame {
+    box-shadow:
+      inset 0 0 0 1px rgba(255,255,255,.20),
+      0 0 0 .12rem rgba(69, 46, 21, .92),
+      0 0 0 .22rem rgba(221, 176, 77, .34),
+      0 0 22px rgba(255, 207, 102, .22),
+      0 12px 22px rgba(0,0,0,.34) !important;
+  }
+}
+
+
+/* ==========================================================
+   V2 mobile fix: top-row names stay clear + no broken-image alt text
+   Applies to no-images packages only; does not change desktop layout.
+   ========================================================== */
+
+@media (max-width: 900px) and (orientation: portrait) {
+  /* Make upper row render above lower row if their bounding boxes touch. */
+  .person-node.is-top {
+    z-index: 42 !important;
+  }
+
+  .person-node.is-bottom {
+    z-index: 32 !important;
+  }
+
+  /* Use explicit ordering instead of relying on column-reverse. */
+  .person-button {
+    position: relative !important;
+  }
+
+  .person-node.is-top .person-button,
+  .person-node.is-bottom .person-button {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  /* TOP ROW: name above portrait, with a touch more breathing room. */
+  .person-node.is-top .person-name {
+    order: 1 !important;
+    margin-top: 0 !important;
+    margin-bottom: .42rem !important;
+    position: relative !important;
+    z-index: 50 !important;
+    transform: translateY(-.08rem) !important;
+  }
+
+  .person-node.is-top .portrait-frame {
+    order: 2 !important;
+    position: relative !important;
+    z-index: 40 !important;
+  }
+
+  /* BOTTOM ROW: portrait above name. */
+  .person-node.is-bottom .portrait-frame {
+    order: 1 !important;
+    position: relative !important;
+    z-index: 40 !important;
+  }
+
+  .person-node.is-bottom .person-name {
+    order: 2 !important;
+    margin-top: .42rem !important;
+    margin-bottom: 0 !important;
+    position: relative !important;
+    z-index: 50 !important;
+  }
+
+  /* No-images fallback: show initials only, not full names/alt text. */
+  .portrait-placeholder {
+    display: grid !important;
+    place-items: center !important;
+    width: 100% !important;
+    height: 100% !important;
+    border-radius: inherit !important;
+    overflow: hidden !important;
+    white-space: nowrap !important;
+    font-size: clamp(.95rem, 5vw, 1.35rem) !important;
+    line-height: 1 !important;
+    letter-spacing: .01em !important;
+  }
+
+  .portrait-frame img {
+    color: transparent !important;
+    font-size: 0 !important;
+  }
+}
+
+@media (max-width: 900px) and (orientation: portrait) and (max-height: 740px) {
+  .person-node.is-top .person-name {
+    margin-bottom: .34rem !important;
+    transform: translateY(-.06rem) !important;
+  }
+
+  .person-node.is-bottom .person-name {
+    margin-top: .34rem !important;
+  }
+}
