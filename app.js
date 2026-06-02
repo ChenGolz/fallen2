@@ -40,6 +40,8 @@ const state = {
   focusPersonId: null,
   focusRelatedIds: new Set(),
   focusLocked: false,
+  autoFocusIndex: 0,
+  lastInteractionAt: 0,
   query: "",
 };
 
@@ -502,12 +504,18 @@ function personMentionsOther(person, other) {
 function isDirectFamilyBond(a, b) {
   if (!a || !b || a.id === b.id) return false;
 
-  if (Array.isArray(a.relatedIds) && a.relatedIds.includes(b.id)) return true;
-  if (Array.isArray(b.relatedIds) && b.relatedIds.includes(a.id)) return true;
-
   if (a.familyGroupId && b.familyGroupId && a.familyGroupId === b.familyGroupId) return true;
 
-  return false;
+  if (personMentionsOther(a, b) || personMentionsOther(b, a)) return true;
+
+  // A gentle fallback for household groups where the uploaded data used the same family name.
+  const aParts = displayNameParts(a.name);
+  const bParts = displayNameParts(b.name);
+  const aSurname = aParts.length > 1 ? aParts[aParts.length - 1] : "";
+  const bSurname = bParts.length > 1 ? bParts[bParts.length - 1] : "";
+  const familyText = `${relativesLines(a).join(" ")} ${relativesLines(b).join(" ")}`;
+
+  return Boolean(aSurname && bSurname && aSurname === bSurname && /אח|אחות|אימ|אב|בנם|בתם|בעלה|אשתו|בן זוג|בת זוג/u.test(familyText));
 }
 
 function relatedIdsFor(person) {
@@ -537,8 +545,12 @@ function updateFocusClasses() {
   });
 }
 
-function focusPerson(person, locked = false) {
+function focusPerson(person, locked = false, source = "manual") {
   if (!person) return;
+
+  if (source !== "auto") {
+    state.lastInteractionAt = Date.now();
+  }
 
   state.focusPersonId = person.id;
   state.focusRelatedIds = relatedIdsFor(person);
@@ -642,6 +654,7 @@ function initializeVisible() {
   state.visibleIds = new Set(state.visible.map((person) => person.id));
   state.nextIndex = state.visible.length % (state.filtered.length || 1);
   state.slotCursor = 0;
+  state.autoFocusIndex = 0;
   state.history = [];
 }
 
@@ -677,6 +690,7 @@ function renderAllVisible(options = {}) {
 
   updatePathProgress();
   updateFocusClasses();
+  window.setTimeout(autoHighlightVisible, options.initial ? 1200 : 350);
   syncStoryFromQuery();
 }
 
@@ -800,12 +814,26 @@ function replaceNode(slotIndex, person) {
   }, 1050);
 }
 
+function autoHighlightVisible() {
+  if (!state.visible.length || state.openPersonId || state.focusLocked) return;
+  if (Date.now() - state.lastInteractionAt < 1800) return;
+
+  const candidates = state.visible.filter(Boolean);
+  if (!candidates.length) return;
+
+  const person = candidates[state.autoFocusIndex % candidates.length];
+  state.autoFocusIndex = (state.autoFocusIndex + 1) % candidates.length;
+  focusPerson(person, false, "auto");
+}
+
 function nextStep() {
   replaceOne(1);
+  window.setTimeout(autoHighlightVisible, 1150);
 }
 
 function prevStep() {
   replaceOne(-1);
+  window.setTimeout(autoHighlightVisible, 1150);
 }
 
 
@@ -890,11 +918,6 @@ function familyGroupSection(person) {
         alt: person.familyGroupTitle || "תמונה משפחתית",
         loading: "lazy",
         decoding: "async",
-        onerror: (event) => {
-          const wrap = event.currentTarget.closest(".family-group-image-wrap");
-          if (wrap) wrap.classList.add("is-missing");
-          event.currentTarget.remove();
-        },
       })
     ),
     el("div", { class: "family-group-copy" },

@@ -154,3 +154,11 @@ Long Excel summaries + relatives update:
 
 
 V11 polish: cleaned generic attack boilerplate from summaries and fixed several relation/summary edge cases.
+
+
+V12 updated descriptions + auto family highlight:
+- Replaced card/story descriptions using the uploaded Excel file מעודכן תקציר אנשים.xlsx.
+- Kept the same data/functionality in both designs.
+- Added automatic focus/highlight cycling when user does not click.
+- Family/group members are highlighted together where relationship data is present.
+- images/ folder omitted.
