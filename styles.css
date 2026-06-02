@@ -4760,3 +4760,8 @@ body {
 /* V15 content polish: placeholder for future family/couple images */
 .family-group-image-wrap.is-missing{display:grid;place-items:center;min-height:11rem;border:1px dashed rgba(120,110,90,.35);background:radial-gradient(circle at 50% 45%,rgba(255,255,255,.16),transparent 62%),linear-gradient(135deg,rgba(255,255,255,.18),rgba(0,0,0,.04));}
 .family-group-image-wrap.is-missing::before{content:"תמונה משפחתית תתווסף בהמשך";font-weight:700;opacity:.66;text-align:center;padding:1rem;}
+
+
+/* V17: graceful placeholder for future shared family/couple images */
+.family-group-image-wrap.is-missing { display: grid; place-items: center; min-height: 11rem; border: 1px dashed rgba(120,110,90,.35); background: radial-gradient(circle at 50% 45%, rgba(255,255,255,.16), transparent 62%), linear-gradient(135deg, rgba(255,255,255,.18), rgba(0,0,0,.04)); }
+.family-group-image-wrap.is-missing::before { content: "תמונה משפחתית תתווסף בהמשך"; font-weight: 700; opacity: .66; text-align: center; padding: 1rem; }

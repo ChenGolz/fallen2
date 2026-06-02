@@ -502,7 +502,6 @@ function personMentionsOther(person, other) {
 function isDirectFamilyBond(a, b) {
   if (!a || !b || a.id === b.id) return false;
 
-  // Exact family focus: only explicit groups/relatedIds, never automatic surname matching.
   if (Array.isArray(a.relatedIds) && a.relatedIds.includes(b.id)) return true;
   if (Array.isArray(b.relatedIds) && b.relatedIds.includes(a.id)) return true;
 
