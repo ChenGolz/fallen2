@@ -1,0 +1,8 @@
+QA report for ARTDECO_FULL_NO_IMAGES_MOBILE_FIXED_V15_CANDLE_LABELS_RECHECKED
+Static/data QA: PASS
+- People records: 85
+- Candle label text exists for every person: True
+- Quote source counts: {'personal_or_source_sentence': 8, 'sensitive_generated': 77}
+- JavaScript syntax check: PASS
+- Search/family/card functionality files unchanged except candle-label additions and cache-busting.
+- Mobile/web visual QA note: this no-images package is prepared for the existing images folder; final visual check should be done after copying images back to GitHub because missing image files intentionally use placeholders/fallbacks.

@@ -999,6 +999,117 @@ function familyGroupSection(person) {
   );
 }
 
+
+
+function candleGenderText(person) {
+  return isFemale(person)
+    ? { memoryFor: "לזכרה של", ageWord: "בת", blessing: "יהי זכרה ברוך" }
+    : { memoryFor: "לזכרו של", ageWord: "בן", blessing: "יהי זכרו ברוך" };
+}
+
+function candleQuote(person) {
+  const quote = String(person.candleQuote || "").trim();
+  if (quote) return quote;
+  const first = firstName(person.name) || "האדם האהוב";
+  return isFemale(person)
+    ? `אורה של ${first} יוסיף להאיר בלב אוהביה, בטוב שהעניקה ובאהבה שהותירה אחריה.`
+    : `אורו של ${first} יוסיף להאיר בלב אוהביו, בטוב שהעניק ובאהבה שהותיר אחריו.`;
+}
+
+function candlePrintLines(person) {
+  const gender = candleGenderText(person);
+  const title = String(person.candlePrintTitle || `${gender.memoryFor} ${formatDisplayName(person.name)}`).trim();
+  const subtitle = String(person.candlePrintSubtitle || [person.community, getAge(person) !== null ? `${gender.ageWord} ${getAge(person)}` : ""].filter(Boolean).join(" · ")).trim();
+  const quote = candleQuote(person);
+  const blessing = String(person.candlePrintBlessing || gender.blessing).trim();
+  return [title, subtitle, `״${quote}״`, blessing].filter(Boolean);
+}
+
+function printCandleLabel(person) {
+  const lines = candlePrintLines(person);
+  const escapeHtml = (value) => String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+
+  const printable = `<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<title>${escapeHtml(lines[0] || "תווית לנר זיכרון")}</title>
+<style>
+  @page { size: 70mm 95mm; margin: 6mm; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    background: #f7f5ef;
+    color: #182535;
+    font-family: "Noto Sans Hebrew", Arial, sans-serif;
+  }
+  .label {
+    width: 62mm;
+    min-height: 82mm;
+    border: 1.4mm solid #c8aa62;
+    border-radius: 8mm;
+    padding: 8mm 6mm;
+    display: grid;
+    align-content: center;
+    gap: 4mm;
+    text-align: center;
+    background: linear-gradient(180deg, #fffdf7, #eef4f6);
+  }
+  .title { font-size: 16pt; font-weight: 800; line-height: 1.25; }
+  .subtitle { font-size: 10.5pt; color: #496272; }
+  .quote { font-size: 12pt; line-height: 1.45; font-weight: 650; }
+  .blessing { font-size: 11pt; font-weight: 700; color: #324956; }
+  .flame { font-size: 20pt; color: #b8862b; line-height: 1; }
+</style>
+</head>
+<body>
+  <section class="label">
+    <div class="flame">🕯️</div>
+    <div class="title">${escapeHtml(lines[0] || "")}</div>
+    ${lines[1] ? `<div class="subtitle">${escapeHtml(lines[1])}</div>` : ""}
+    <div class="quote">${escapeHtml(lines[2] || "")}</div>
+    <div class="blessing">${escapeHtml(lines[3] || "")}</div>
+  </section>
+<script>window.onload = () => { window.focus(); window.print(); };</script>
+</body>
+</html>`;
+
+  const printWindow = window.open("", "_blank", "noopener,noreferrer,width=480,height=640");
+  if (!printWindow) {
+    alert(lines.join("\n"));
+    return;
+  }
+  printWindow.document.open();
+  printWindow.document.write(printable);
+  printWindow.document.close();
+}
+
+function candlePrintSection(person) {
+  const quote = candleQuote(person);
+  return el("section", { class: "candle-print-card", "aria-label": `תווית לנר זיכרון עבור ${formatDisplayName(person.name)}` },
+    el("div", { class: "candle-print-copy" },
+      el("span", { class: "candle-print-kicker", text: "תווית לנר זיכרון" }),
+      el("p", { class: "candle-print-quote", text: `״${quote}״` }),
+      person.candleQuoteSource === "personal_or_source_sentence"
+        ? el("span", { class: "candle-print-source", text: "משפט אישי או משפט מזוהה מתוך החומרים שנמסרו" })
+        : el("span", { class: "candle-print-source", text: "נוסח עדין להנצחה על נר" })
+    ),
+    el("button", {
+      class: "candle-print-button",
+      type: "button",
+      onClick: () => printCandleLabel(person),
+    }, "הדפסת תווית לנר")
+  );
+}
+
+
 function storyDetails(person) {
   const items = [
     ["יישוב", person.community || "לא צוין"],
@@ -1086,6 +1197,7 @@ function renderStory(person) {
         el("div", { class: "story-actions" }, candleBtn)
       )
     ),
+    candlePrintSection(person),
     familyGroupSection(person),
     relativesSection(person),
     storyDetails(person)
