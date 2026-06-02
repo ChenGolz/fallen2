@@ -507,16 +507,7 @@ function isDirectFamilyBond(a, b) {
 
   if (a.familyGroupId && b.familyGroupId && a.familyGroupId === b.familyGroupId) return true;
 
-  if (personMentionsOther(a, b) || personMentionsOther(b, a)) return true;
-
-  // A gentle fallback for household groups where the uploaded data used the same family name.
-  const aParts = displayNameParts(a.name);
-  const bParts = displayNameParts(b.name);
-  const aSurname = aParts.length > 1 ? aParts[aParts.length - 1] : "";
-  const bSurname = bParts.length > 1 ? bParts[bParts.length - 1] : "";
-  const familyText = `${relativesLines(a).join(" ")} ${relativesLines(b).join(" ")}`;
-
-  return Boolean(aSurname && bSurname && aSurname === bSurname && /אח|אחות|אימ|אב|בנם|בתם|בעלה|אשתו|בן זוג|בת זוג/u.test(familyText));
+  return false;
 }
 
 function relatedIdsFor(person) {
