@@ -443,9 +443,14 @@ function cleanFamilyText(person) {
     .trim();
 }
 
+function guardLabel(person) {
+  if (person.guardRole) return person.guardRole;
+  if (person.isGuardMember) return "כיתת כוננות";
+  return "";
+}
+
 function isGuardMember(person) {
-  const text = `${person.role || ""} ${person.storySummary || ""}`;
-  return ["כיתת הכוננות", "כיתת כוננות", "רבש\"ץ", "סגן רבש\"ץ"].some((term) => text.includes(term));
+  return Boolean(guardLabel(person));
 }
 
 
@@ -528,6 +533,44 @@ function relatedIdsFor(person) {
   return ids;
 }
 
+function visibleSignature(list) {
+  return list.map((person) => person.id).join("|");
+}
+
+function buildFamilyVisible(person) {
+  const limit = visibleCount();
+  const related = relatedIdsFor(person);
+  if (!related.size) return null;
+
+  const clusterIds = new Set([person.id, ...related]);
+  const cluster = state.filtered.filter((item) => clusterIds.has(item.id));
+  if (cluster.length <= 1) return null;
+
+  const fill = [
+    ...state.visible,
+    ...state.filtered
+  ].filter((item, index, arr) =>
+    !clusterIds.has(item.id) &&
+    arr.findIndex((other) => other.id === item.id) === index
+  );
+
+  return [...cluster, ...fill].slice(0, limit);
+}
+
+function ensureFamilyVisible(person) {
+  const nextVisible = buildFamilyVisible(person);
+  if (!nextVisible) return false;
+
+  const currentSignature = visibleSignature(state.visible);
+  const nextSignature = visibleSignature(nextVisible);
+  if (currentSignature === nextSignature) return false;
+
+  state.visible = nextVisible;
+  state.visibleIds = new Set(state.visible.map((item) => item.id));
+  renderAllVisible({ initial: false, skipAutoFocus: true });
+  return true;
+}
+
 function updateFocusClasses() {
   const hasFocus = Boolean(state.focusPersonId);
 
@@ -555,6 +598,11 @@ function focusPerson(person, locked = false, source = "manual") {
   state.focusPersonId = person.id;
   state.focusRelatedIds = relatedIdsFor(person);
   state.focusLocked = locked;
+
+  if (ensureFamilyVisible(person)) {
+    updateFocusClasses();
+    return;
+  }
 
   updateFocusClasses();
 }
@@ -622,25 +670,37 @@ function updatePathProgress() {
   els.pathFill.style.strokeDashoffset = String(1500 - ratio * 1500);
 }
 
+function searchHaystack(person) {
+  const values = [
+    person.name,
+    formatDisplayName(person.name),
+    person.community,
+    person.age,
+    person.role,
+    person.guardRole,
+    person.family,
+    person.eventPlace,
+    person.burialPlace,
+    person.familyGroupTitle,
+    Array.isArray(person.relativesLines) ? person.relativesLines.join(" ") : person.relativesText,
+    Array.isArray(person.familyGroupMembers) ? person.familyGroupMembers.join(" ") : "",
+  ];
+
+  return cleanOrderText(values.filter(Boolean).join(" "));
+}
+
 function applySearch(query) {
   clearFocusMode(true);
-  state.query = normalizeText(query);
+  state.query = cleanOrderText(query);
 
-  const source = !state.query
+  const tokens = state.query.split(/\s+/u).filter(Boolean);
+
+  const source = !tokens.length
     ? [...state.people]
-    : state.people.filter((person) =>
-        [
-          person.name,
-          formatDisplayName(person.name),
-          person.community,
-          person.age,
-          person.role,
-          person.storySummary,
-          person.family,
-          person.eventPlace,
-          person.burialPlace,
-        ].some((value) => normalizeText(value).includes(state.query))
-      );
+    : state.people.filter((person) => {
+        const haystack = searchHaystack(person);
+        return tokens.every((token) => haystack.includes(token));
+      });
 
   state.filtered = source.sort(sortPeople);
   initializeVisible();
@@ -690,7 +750,7 @@ function renderAllVisible(options = {}) {
 
   updatePathProgress();
   updateFocusClasses();
-  window.setTimeout(autoHighlightVisible, options.initial ? 1200 : 350);
+  if (!options.skipAutoFocus) window.setTimeout(autoHighlightVisible, options.initial ? 1200 : 350);
   syncStoryFromQuery();
 }
 
@@ -860,6 +920,14 @@ function storyText(person) {
   return "טרם נוסף סיפור מורחב.";
 }
 
+function storyParagraphs(person) {
+  const text = storyText(person);
+  return text
+    .split(/\n{2,}/u)
+    .map((part) => part.replace(/\n+/gu, " ").replace(/\s+/gu, " ").trim())
+    .filter(Boolean);
+}
+
 function compactRelativesText(person) {
   const lines = relativesLines(person);
   if (!lines.length) return "";
@@ -1010,9 +1078,11 @@ function renderStory(person) {
         el("div", { class: "story-meta" },
           el("span", { text: person.community || "יישוב לא צוין" }),
           getAge(person) !== null ? el("span", { text: `גיל ${person.age}` }) : null,
-          isGuardMember(person) ? el("span", { text: "כיתת כוננות" }) : null
+          guardLabel(person) ? el("span", { text: guardLabel(person) }) : null
         ),
-        el("p", { text: storyText(person) }),
+        el("div", { class: "story-description" },
+          storyParagraphs(person).map((paragraph) => el("p", { text: paragraph }))
+        ),
         el("div", { class: "story-actions" }, candleBtn)
       )
     ),

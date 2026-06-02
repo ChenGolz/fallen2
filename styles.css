@@ -4715,3 +4715,37 @@ body {
   .gold-network-svg,
   .heartbeat-svg { top: 65.4% !important; }
 }
+
+
+/* V13 clean story text + family/search polish */
+.story-description {
+  display: grid;
+  gap: .9rem;
+  margin: 0;
+}
+
+.story-description p {
+  margin: 0;
+  line-height: 1.85;
+  color: #4f4334;
+  font-size: 1.04rem;
+}
+
+.story-description p:first-child {
+  font-weight: 650;
+}
+
+.story-copy > p {
+  white-space: pre-line;
+}
+
+@media (max-width: 900px) and (orientation: portrait) {
+  .story-description {
+    gap: .75rem !important;
+  }
+
+  .story-description p {
+    font-size: .94rem !important;
+    line-height: 1.72 !important;
+  }
+}
