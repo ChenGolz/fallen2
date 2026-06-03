@@ -1,0 +1,36 @@
+QA V35 FULL SITE REPORT
+=======================
+
+Design folder: ARTDECO_FULL_NO_IMAGES_MOBILE_FIXED_V35_SEARCH_QA_POPUP_POLISH
+People in data: 85
+JS syntax check: PASS (node -c app.js)
+Description QA problematic rows: 0
+Description length range: 159–253 chars
+
+Search QA:
+- אביב: 7 results → אביב קוץ | אביב ורטהיים | אביב ברעם | ליבנת קוץ | רותם קוץ | יונתן קוץ | יפתח קוץ
+- קוץ: 5 results → אביב קוץ | ליבנת קוץ | רותם קוץ | יונתן קוץ | יפתח קוץ
+- עומר: 2 results → עומר צדיקביץ' | עומר חרמש
+- אופיר: 3 results → אופיר ליבשטיין | אופיר שושני | ניצן ליבשטיין
+- כפר עזה: 60 results → אופיר ליבשטיין | עומר צדיקביץ' | אביב קוץ | ליבנת קוץ | רותם קוץ | יונתן קוץ | יפתח קוץ | ניצן ליבשטיין | נדב גולדשטיין אלמוג | ים גולדשטיין אלמוג | מיכל אדמוני | גיא אדמוני
+- שחר אביאני: 1 results → שחר אביאני
+- קשת: 4 results → קשת זוהר | יניב זוהר | יסמין זוהר | תכלת זוהר
+
+Important search behavior change:
+- Search first matches the person's own name only.
+- Full text search is used only if no own-name match exists.
+- If a matched person belongs to a direct family cluster, that family cluster is kept visible together.
+- Search results no longer auto-rotate; users can page manually.
+
+Popup / click QA:
+- Pointerdown capture opens the exact visible portrait.
+- Leaving/fading nodes are ignored as click targets.
+- Rotation is blocked during hover, click, search, and story popup.
+- Story popup contrast is forced for description, family, details, and candle sections.
+
+Responsive QA checklist:
+- Desktop: 8 slots/page.
+- Mobile portrait: mobile slots from MOBILE_POINTS; search results remain stable.
+- Family groups are kept together when they fit the current slot count.
+
+Description QA: PASS — no known source/admin fragments, all rows include ז״ל and have structured paragraphs.

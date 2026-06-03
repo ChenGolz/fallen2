@@ -1,7 +1,7 @@
 "use strict";
 
 const PAGE_SIZE = 8;
-const ROTATE_MS = 4600;
+const ROTATE_MS = 6400;
 const AUTO_HIGHLIGHT_AFTER_CHANGE_MS = 2800;
 const CANDLE_KEY = "memorial-final-candles-v1";
 
@@ -32,6 +32,9 @@ const state = {
   filtered: [],
   visible: [],
   visibleIds: new Set(),
+  pages: [],
+  pageIndex: 0,
+  isTransitioning: false,
   nextIndex: 0,
   slotCursor: 0,
   history: [],
@@ -568,6 +571,17 @@ function buildFamilyVisible(person) {
 }
 
 function ensureFamilyVisible(person) {
+  const related = relatedIdsFor(person);
+  if (!related.size) return false;
+
+  const clusterIds = new Set([person.id, ...related]);
+  const visibleHasWholeFamily = [...clusterIds].every((id) => state.visibleIds.has(id));
+
+  if (visibleHasWholeFamily) {
+    updateFocusClasses();
+    return false;
+  }
+
   const nextVisible = buildFamilyVisible(person);
   if (!nextVisible) return false;
 
@@ -577,7 +591,6 @@ function ensureFamilyVisible(person) {
 
   state.visible = nextVisible;
   state.visibleIds = new Set(state.visible.filter(Boolean).map((item) => item.id));
-  state.slotCursor = state.visible.filter(Boolean).length;
   renderAllVisible({ initial: false, skipAutoFocus: true });
   return true;
 }
@@ -610,8 +623,9 @@ function focusPerson(person, locked = false, source = "manual") {
   state.focusRelatedIds = relatedIdsFor(person);
   state.focusLocked = Boolean(locked);
 
-  // Hover, keyboard focus and click should all keep directly-related family members visible.
-  if (source !== "auto" && ensureFamilyVisible(person)) {
+  // Only hover/keyboard should rearrange the visible line to show family.
+  // Press/open must keep the clicked card stable and open the popup immediately.
+  if ((source === "hover" || source === "keyboard") && ensureFamilyVisible(person)) {
     updateFocusClasses();
     return;
   }
@@ -675,17 +689,26 @@ function enrichPerson(person, index) {
 
 function updatePathProgress() {
   if (!els.pathFill) return;
-  const total = Math.max(state.filtered.length, 1);
-  const progressed = Math.min(total, Math.max(visibleCount(), state.nextIndex));
-  const ratio = Math.min(1, Math.max(.10, progressed / total));
-  els.pathFill.style.strokeDasharray = "1500";
-  els.pathFill.style.strokeDashoffset = String(1500 - ratio * 1500);
+
+  const total = Math.max(state.pages.length, 1);
+  const progress = !state.pages.length ? 0 : (state.pageIndex + 1) / total;
+  els.pathFill.style.strokeDashoffset = String(1 - progress);
 }
 
-function searchHaystack(person) {
+function ownNameSearchText(person) {
   const values = [
     person.name,
     formatDisplayName(person.name),
+    person.excelDisplayName,
+    person.updatedExcelName,
+  ];
+
+  return cleanOrderText(values.filter(Boolean).join(" "));
+}
+
+function fullSearchText(person) {
+  const values = [
+    ownNameSearchText(person),
     person.community,
     person.age,
     person.role,
@@ -695,44 +718,231 @@ function searchHaystack(person) {
     person.burialPlace,
     person.familyGroupTitle,
     Array.isArray(person.relativesLines) ? person.relativesLines.join(" ") : person.relativesText,
-    Array.isArray(person.familyGroupMembers) ? person.familyGroupMembers.join(" ") : "",
   ];
 
   return cleanOrderText(values.filter(Boolean).join(" "));
+}
+
+function tokensMatch(text, tokens) {
+  return tokens.every((token) => text.includes(token));
+}
+
+function expandWithVisibleFamily(matches) {
+  const result = [];
+  const ids = new Set();
+
+  const add = (person) => {
+    if (!person || ids.has(person.id)) return;
+    ids.add(person.id);
+    result.push(person);
+  };
+
+  matches.forEach((person) => {
+    add(person);
+
+    // If a person belongs to a direct family cluster, keep that cluster visible too.
+    state.people.forEach((candidate) => {
+      if (candidate.id !== person.id && isDirectFamilyBond(person, candidate)) {
+        add(candidate);
+      }
+    });
+  });
+
+  return result;
+}
+
+function searchRank(person, tokens, query) {
+  if (!tokens.length) return customOrderRank(person);
+
+  const own = ownNameSearchText(person);
+  const display = cleanOrderText(formatDisplayName(person.name));
+  const exact = display === query || own === query;
+  const starts = display.startsWith(query) || own.startsWith(query);
+  const nameMatch = tokensMatch(own, tokens);
+
+  if (exact) return 0;
+  if (starts) return 1;
+  if (nameMatch) return 2;
+  return 8;
+}
+
+function sortSearchResults(list, tokens, query) {
+  return [...list].sort((a, b) => {
+    const rankA = searchRank(a, tokens, query);
+    const rankB = searchRank(b, tokens, query);
+    if (rankA !== rankB) return rankA - rankB;
+
+    const customA = customOrderRank(a);
+    const customB = customOrderRank(b);
+    if (customA !== customB) return customA - customB;
+
+    return formatDisplayName(a.name).localeCompare(formatDisplayName(b.name), "he");
+  });
+}
+
+function searchHaystack(person) {
+  return fullSearchText(person);
 }
 
 function applySearch(query) {
   clearFocusMode(true);
   state.isPointerHovering = false;
   state.isOpeningStory = false;
+  state.isTransitioning = false;
   state.interactionGuardUntil = 0;
   state.query = cleanOrderText(query);
 
   const tokens = state.query.split(/\s+/u).filter(Boolean);
 
-  const source = !tokens.length
-    ? [...state.people]
-    : state.people.filter((person) => {
-      const haystack = searchHaystack(person);
-      return tokens.every((token) => haystack.includes(token));
-    });
+  let source;
+  if (!tokens.length) {
+    source = [...state.people];
+  } else {
+    const nameMatches = state.people.filter((person) => tokensMatch(ownNameSearchText(person), tokens));
+    const baseMatches = nameMatches.length
+      ? nameMatches
+      : state.people.filter((person) => tokensMatch(fullSearchText(person), tokens));
+
+    source = sortSearchResults(expandWithVisibleFamily(baseMatches), tokens, state.query);
+  }
 
   state.filtered = source;
   initializeVisible();
   renderAllVisible({ initial: true });
 
   stopTimer();
-  startTimer();
+
+  // Search results should stay stable. Users can page manually if there are more results.
+  if (!tokens.length) startTimer();
+}
+
+function componentForPerson(seed, people, visited) {
+  const component = [];
+  const queue = [seed];
+  visited.add(seed.id);
+
+  while (queue.length) {
+    const current = queue.shift();
+    component.push(current);
+
+    people.forEach((candidate) => {
+      if (visited.has(candidate.id)) return;
+      if (isDirectFamilyBond(current, candidate)) {
+        visited.add(candidate.id);
+        queue.push(candidate);
+      }
+    });
+  }
+
+  // Do not alphabetically reshuffle search groups; keep the current filtered order.
+  const order = new Map(people.map((person, index) => [person.id, index]));
+  component.sort((a, b) => (order.get(a.id) ?? 9999) - (order.get(b.id) ?? 9999));
+
+  return component;
+}
+
+function buildVisiblePages() {
+  const limit = visibleCount();
+  const pages = [];
+  const visited = new Set();
+
+  const groups = [];
+  state.filtered.forEach((person) => {
+    if (visited.has(person.id)) return;
+    groups.push(componentForPerson(person, state.filtered, visited));
+  });
+
+  let page = [];
+  groups.forEach((group) => {
+    // Families are kept together whenever the screen has enough slots.
+    if (group.length > limit) {
+      if (page.length) {
+        pages.push(page);
+        page = [];
+      }
+
+      for (let i = 0; i < group.length; i += limit) {
+        pages.push(group.slice(i, i + limit));
+      }
+      return;
+    }
+
+    if (page.length && page.length + group.length > limit) {
+      pages.push(page);
+      page = [];
+    }
+
+    page.push(...group);
+  });
+
+  if (page.length) pages.push(page);
+  return pages;
+}
+
+function currentPage() {
+  if (!state.pages.length) return [];
+  return state.pages[state.pageIndex % state.pages.length] || [];
+}
+
+function setVisibleFromPage(page) {
+  state.visible = Array.isArray(page) ? page.filter(Boolean) : [];
+  state.visibleIds = new Set(state.visible.map((person) => person.id));
+}
+
+function showPage(pageIndex, options = {}) {
+  if (!state.pages.length) {
+    setVisibleFromPage([]);
+    renderAllVisible({ initial: true });
+    return;
+  }
+
+  if (state.openPersonId || state.isOpeningStory) return;
+  if (Date.now() < state.interactionGuardUntil) return;
+
+  const nextIndex = (pageIndex + state.pages.length) % state.pages.length;
+  const nextPage = state.pages[nextIndex] || [];
+  const currentSignature = visibleSignature(state.visible);
+  const nextSignature = visibleSignature(nextPage);
+
+  if (currentSignature === nextSignature && !options.force) {
+    state.pageIndex = nextIndex;
+    return;
+  }
+
+  state.pageIndex = nextIndex;
+  state.isTransitioning = true;
+
+  const oldNodes = Array.from(els.layer.querySelectorAll(".person-node:not(.is-leaving)"));
+  oldNodes.forEach((node) => node.classList.add("is-leaving"));
+
+  const renderNext = () => {
+    setVisibleFromPage(nextPage);
+    renderAllVisible({ initial: false });
+    state.isTransitioning = false;
+  };
+
+  if (oldNodes.length && !options.instant) {
+    window.setTimeout(renderNext, 520);
+  } else {
+    renderNext();
+  }
+}
+
+function nextPage(direction = 1) {
+  if (state.openPersonId || state.isOpeningStory || state.focusLocked || state.isPointerHovering || state.isTransitioning) return;
+  if (Date.now() < state.interactionGuardUntil) return;
+  showPage(state.pageIndex + direction);
 }
 
 function initializeVisible() {
-  const count = visibleCount();
-  state.visible = Array.from({ length: count }, () => null);
-  state.visibleIds = new Set();
+  state.pages = buildVisiblePages();
+  state.pageIndex = 0;
+  setVisibleFromPage(currentPage());
   state.nextIndex = 0;
   state.slotCursor = 0;
   state.autoFocusIndex = 0;
   state.history = [];
+  state.isTransitioning = false;
 }
 
 function showEmptyState() {
@@ -740,7 +950,7 @@ function showEmptyState() {
     el("div", { class: "empty-state" },
       el("div", {},
         el("h2", { text: "לא נמצאו תוצאות" }),
-        el("p", { text: "נסי לחפש שם, יישוב, גיל או פרט מתוך הסיפור." })
+        el("p", { text: "נסי לחפש שם פרטי/משפחה. אם אין התאמה בשם, החיפוש יבדוק גם יישוב, גיל ופרטים מתוך הסיפור." })
       )
     )
   );
@@ -749,7 +959,7 @@ function showEmptyState() {
 function renderAllVisible(options = {}) {
   els.layer.replaceChildren();
 
-  if (!state.filtered.length) {
+  if (!state.filtered.length || !state.visible.length) {
     showEmptyState();
     return;
   }
@@ -761,7 +971,7 @@ function renderAllVisible(options = {}) {
     node.dataset.slotIndex = String(index);
     els.layer.append(node);
 
-    const delay = options.initial ? 0 : 120 + index * 70;
+    const delay = options.initial ? index * 75 : 90 + index * 45;
     requestAnimationFrame(() => {
       setTimeout(() => node.classList.add("is-visible"), delay);
     });
@@ -769,12 +979,12 @@ function renderAllVisible(options = {}) {
 
   updatePathProgress();
   updateFocusClasses();
-  syncStoryFromQuery();
+  if (!state.openPersonId && !state.isOpeningStory) syncStoryFromQuery();
 }
 
 function personFromPointerEvent(event) {
   const node = event.target?.closest?.(".person-node");
-  if (!node || !els.layer.contains(node)) return null;
+  if (!node || !els.layer.contains(node) || node.classList.contains("is-leaving")) return null;
 
   const id = node.dataset.personId;
   if (!id) return null;
@@ -791,8 +1001,7 @@ function openPersonFromPointer(event) {
   event.preventDefault();
   event.stopPropagation();
 
-  // Guard against a carousel tick during the press/click window.
-  state.interactionGuardUntil = Date.now() + 1800;
+  state.interactionGuardUntil = Date.now() + 2400;
   handlePersonPress(person, event);
 }
 
@@ -839,17 +1048,18 @@ function handlePersonPress(person, event = null) {
 
   state.isOpeningStory = true;
   state.isPointerHovering = false;
-  state.interactionGuardUntil = Date.now() + 1800;
+  state.isTransitioning = false;
+  state.interactionGuardUntil = Date.now() + 2400;
   clearTimeout(state.clickGuardTimer);
   clearTimeout(state.captureClickTimer);
   pauseRotationForInteraction();
 
-  // Open the story immediately for the exact person attached to the clicked node.
+  // Open exact visible person. No search/page refresh happens here.
   openStory(person);
 
   state.clickGuardTimer = window.setTimeout(() => {
     state.isOpeningStory = false;
-  }, 900);
+  }, 700);
 }
 
 function renderPersonNode(person, index) {
@@ -904,7 +1114,9 @@ function renderPersonNode(person, index) {
     },
     onClick: (event) => {
       // Keyboard activation fallback. Pointer activation is handled by the layer capture handler.
-      if (!state.openPersonId && !state.isOpeningStory) handlePersonPress(person, event);
+      if (event.detail === 0 && !state.openPersonId && !state.isOpeningStory) {
+        handlePersonPress(person, event);
+      }
     },
   });
 
@@ -990,49 +1202,7 @@ function fadeOutSlot(slotIndex) {
 }
 
 function replaceOne(direction = 1) {
-  if (state.openPersonId || state.isOpeningStory || state.focusLocked || state.isPointerHovering) return;
-  if (Date.now() < state.interactionGuardUntil) return;
-  if (!state.filtered.length) return;
-
-  const count = visibleCount();
-  if (!Array.isArray(state.visible) || state.visible.length !== count) {
-    state.visible = Array.from({ length: count }, () => null);
-    state.visibleIds = new Set();
-    state.slotCursor = 0;
-  }
-
-  if (direction < 0 && state.history.length) {
-    const last = state.history.pop();
-    const current = state.visible[last.slotIndex];
-
-    if (current) state.visibleIds.delete(current.id);
-    if (last.previousPerson) state.visibleIds.add(last.previousPerson.id);
-
-    state.visible[last.slotIndex] = last.previousPerson || null;
-    state.slotCursor = Math.max(0, state.slotCursor - 1);
-
-    if (last.previousPerson) replaceNode(last.slotIndex, last.previousPerson);
-    else clearSlotNode(last.slotIndex);
-
-    updatePathProgress();
-    return;
-  }
-
-  const nextPerson = nextAvailablePersonForSequence();
-  if (!nextPerson) return;
-
-  const slotIndex = state.slotCursor % count;
-  const previousPerson = state.visible[slotIndex] || null;
-
-  if (previousPerson) state.visibleIds.delete(previousPerson.id);
-  state.visible[slotIndex] = nextPerson;
-  state.visibleIds.add(nextPerson.id);
-  state.history.push({ slotIndex, previousPerson, nextPerson });
-  state.slotCursor += 1;
-
-  // The same slot is used when the old person completes the full visible cycle.
-  replaceNode(slotIndex, nextPerson);
-  updatePathProgress();
+  nextPage(direction);
 }
 
 function clearSlotNode(slotIndex) {
@@ -1047,10 +1217,7 @@ function clearSlotNode(slotIndex) {
 }
 
 function replaceNode(slotIndex, person) {
-  if (!person) {
-    clearSlotNode(slotIndex);
-    return;
-  }
+  if (!person) return;
 
   const oldNode = els.layer.querySelector(`.person-node[data-slot-index="${slotIndex}"]:not(.is-leaving)`);
   const newNode = renderPersonNode(person, slotIndex);
@@ -1071,7 +1238,7 @@ function replaceNode(slotIndex, person) {
       newNode.classList.add("is-visible");
       updateFocusClasses();
     });
-  }, 850);
+  }, 520);
 }
 
 function autoHighlightVisible() {
@@ -1445,27 +1612,27 @@ function openStory(person) {
   if (!person) return;
 
   state.isOpeningStory = true;
-  state.interactionGuardUntil = Date.now() + 1800;
+  state.interactionGuardUntil = Date.now() + 2400;
   pauseRotationForInteraction();
   state.openPersonId = person.id;
-  focusPerson(person, true, "open");
 
   const url = new URL(window.location.href);
   url.searchParams.set("id", person.id);
   updateUrlSafely(url, { id: person.id });
 
   renderStory(person);
+  focusPerson(person, true, "open");
   announce(`${formatDisplayName(person.name)}. ${person.storySummary || "סיפור אישי נפתח."}`);
 
   window.setTimeout(() => {
     state.isOpeningStory = false;
-  }, 300);
+  }, 250);
 }
 
 function closeStory() {
   state.openPersonId = null;
   state.isOpeningStory = false;
-  state.interactionGuardUntil = Date.now() + 500;
+  state.interactionGuardUntil = Date.now() + 650;
   els.storyRoot.replaceChildren();
   clearFocusMode(true);
 
@@ -1543,26 +1710,26 @@ function syncStoryFromQuery() {
 
   const person = state.people.find((item) => item.id === id);
   if (person && state.openPersonId !== id) {
+    state.openPersonId = person.id;
     renderStory(person);
+    focusPerson(person, true, "open");
   }
 }
 
 function startTimer() {
   stopTimer();
 
-  if (state.paused || state.openPersonId || state.isOpeningStory || state.focusLocked || state.isPointerHovering) return;
-
-  const firstDelay = state.visible.some(Boolean) ? ROTATE_MS : 650;
+  if (state.query || state.paused || state.openPersonId || state.isOpeningStory || state.focusLocked || state.isPointerHovering || state.isTransitioning) return;
 
   state.timer = window.setTimeout(function tick() {
-    if (!state.paused && !state.openPersonId && !state.isOpeningStory && !state.focusLocked && !state.isPointerHovering) {
-      replaceOne(1);
+    if (!state.query && !state.paused && !state.openPersonId && !state.isOpeningStory && !state.focusLocked && !state.isPointerHovering && !state.isTransitioning) {
+      nextPage(1);
     }
 
-    if (!state.paused && !state.openPersonId && !state.isOpeningStory && !state.focusLocked && !state.isPointerHovering) {
+    if (!state.query && !state.paused && !state.openPersonId && !state.isOpeningStory && !state.focusLocked && !state.isPointerHovering && !state.isTransitioning) {
       state.timer = window.setTimeout(tick, ROTATE_MS);
     }
-  }, firstDelay);
+  }, ROTATE_MS);
 }
 
 function stopTimer() {
@@ -1595,7 +1762,6 @@ async function loadData() {
 }
 
 function initEvents() {
-  // Capture pointerdown before the carousel can advance. This opens the exact card the user pressed.
   els.layer.addEventListener("pointerdown", openPersonFromPointer, true);
 
   els.search.addEventListener("input", debounce((event) => {
@@ -1604,13 +1770,13 @@ function initEvents() {
 
   els.next.addEventListener("click", () => {
     if (state.openPersonId || state.isOpeningStory) return;
-    replaceOne(1);
+    nextPage(1);
     startTimer();
   });
 
   els.prev.addEventListener("click", () => {
     if (state.openPersonId || state.isOpeningStory) return;
-    replaceOne(-1);
+    nextPage(-1);
     startTimer();
   });
 
@@ -1633,8 +1799,8 @@ function initEvents() {
 
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && state.openPersonId) closeStory();
-    if (event.key === "ArrowLeft" && !state.openPersonId) replaceOne(1);
-    if (event.key === "ArrowRight" && !state.openPersonId) replaceOne(-1);
+    if (event.key === "ArrowLeft" && !state.openPersonId) nextPage(1);
+    if (event.key === "ArrowRight" && !state.openPersonId) nextPage(-1);
   });
 
   window.addEventListener("popstate", syncStoryFromQuery);
