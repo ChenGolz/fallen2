@@ -5496,3 +5496,135 @@ body {
     opacity: 1 !important;
   }
 }
+
+
+/* ==========================================================
+   V30 description + family card polish
+   ========================================================== */
+
+.story-panel {
+  container-type: inline-size;
+}
+
+.story-description {
+  display: grid !important;
+  gap: .85rem !important;
+  margin-block: .8rem 1.05rem !important;
+}
+
+.story-description p {
+  margin: 0 !important;
+  padding: .95rem 1.05rem !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+  border-radius: 1.05rem !important;
+  background: linear-gradient(135deg, rgba(255,255,255,.075), rgba(255,255,255,.025)) !important;
+  color: rgba(247,252,255,.94) !important;
+  line-height: 1.72 !important;
+  font-size: clamp(.98rem, 1.1vw, 1.08rem) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08) !important;
+}
+
+.story-description p:first-child::before {
+  content: "סיפור חיים";
+  display: inline-flex;
+  margin-inline-start: .45rem;
+  margin-block-end: .45rem;
+  padding: .18rem .58rem;
+  border-radius: 999px;
+  background: rgba(255, 224, 143, .14);
+  color: rgba(255, 238, 188, .95);
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .02em;
+}
+
+.relatives-card-grid {
+  margin-top: 1rem !important;
+  padding: 1.05rem !important;
+  border-radius: 1.15rem !important;
+  border: 1px solid rgba(255,255,255,.12) !important;
+  background:
+    radial-gradient(circle at 12% 10%, rgba(255, 218, 136, .13), transparent 12rem),
+    linear-gradient(135deg, rgba(255,255,255,.075), rgba(255,255,255,.025)) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 18px 50px rgba(0,0,0,.14) !important;
+}
+
+.relatives-card-header {
+  display: grid !important;
+  gap: .28rem !important;
+  margin-bottom: .85rem !important;
+}
+
+.relatives-card-kicker {
+  width: fit-content !important;
+  padding: .22rem .62rem !important;
+  border-radius: 999px !important;
+  background: rgba(255, 224, 143, .15) !important;
+  color: rgba(255, 238, 188, .96) !important;
+  font-size: .76rem !important;
+  font-weight: 850 !important;
+}
+
+.relatives-card-header p {
+  margin: 0 !important;
+  color: rgba(225,238,245,.75) !important;
+  font-size: .86rem !important;
+  line-height: 1.55 !important;
+}
+
+.relatives-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: .62rem !important;
+}
+
+.relative-pill {
+  display: grid !important;
+  gap: .24rem !important;
+  padding: .72rem .8rem !important;
+  border-radius: .85rem !important;
+  background: rgba(0,0,0,.17) !important;
+  border: 1px solid rgba(255,255,255,.09) !important;
+}
+
+.relative-label {
+  color: rgba(185,216,230,.82) !important;
+  font-size: .74rem !important;
+  font-weight: 800 !important;
+}
+
+.relative-value {
+  color: rgba(255,255,255,.96) !important;
+  font-size: .96rem !important;
+  line-height: 1.45 !important;
+  font-weight: 760 !important;
+}
+
+.candle-print-card {
+  border-radius: 1.15rem !important;
+}
+
+.candle-label-lines {
+  gap: .42rem !important;
+}
+
+.candle-label-lines strong,
+.candle-label-lines em {
+  line-height: 1.48 !important;
+}
+
+@media (max-width: 720px) {
+  .story-description p {
+    padding: .82rem .88rem !important;
+    line-height: 1.62 !important;
+    font-size: .94rem !important;
+  }
+
+  .relatives-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .relative-pill {
+    padding: .68rem .75rem !important;
+  }
+}

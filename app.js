@@ -1108,16 +1108,38 @@ function relationshipParts(line) {
   };
 }
 
-function relativesSection(person) {
-  const lines = relativesLines(person);
-  if (!lines.length) return null;
+function familyMemberRows(person) {
+  const fm = person.familyMembers || {};
+  const rows = [
+    ["הורים", fm.parents || person.parents],
+    ["בן/בת זוג", fm.spouse || person.spouse],
+    ["ילדים", fm.children || person.children],
+    ["אחים", fm.siblings || person.siblings],
+    ["סבים/סבתות", fm.grandparents || person.grandparents],
+  ].filter(([, value]) => String(value || "").trim());
 
-  return el("section", { class: "relatives-card relatives-card-flow relatives-card-no-title", "aria-label": `פרטי משפחה של ${formatDisplayName(person.name)}` },
-    el("div", { class: "relatives-sentence" },
-      lines.map((line, index) =>
-        el("span", { class: "relatives-segment" },
-          el("span", { class: "relatives-segment-text", text: line }),
-          index < lines.length - 1 ? el("span", { class: "relatives-dot", text: "•" }) : null
+  if (rows.length) return rows;
+
+  return relativesLines(person).map((line) => {
+    const parts = relationshipParts(line);
+    return [parts.label || "משפחה", parts.value || line];
+  });
+}
+
+function relativesSection(person) {
+  const rows = familyMemberRows(person);
+  if (!rows.length) return null;
+
+  return el("section", { class: "relatives-card relatives-card-grid", "aria-label": `משפחה קרובה של ${formatDisplayName(person.name)}` },
+    el("div", { class: "relatives-card-header" },
+      el("span", { class: "relatives-card-kicker", text: "משפחה קרובה" }),
+      el("p", { text: "הפרטים מוצגים לפי המידע שנמסר ונמצא במקורות שזוהו בוודאות לאותו אדם." })
+    ),
+    el("div", { class: "relatives-grid" },
+      rows.map(([label, value]) =>
+        el("div", { class: "relative-pill" },
+          el("span", { class: "relative-label", text: label }),
+          el("strong", { class: "relative-value", text: value })
         )
       )
     )
