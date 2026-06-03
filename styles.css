@@ -5264,3 +5264,101 @@ body {
     transition-duration: 2.0s !important;
   }
 }
+
+
+/* ==========================================================
+   V22 transitionend fade polish:
+   Snappier, cleaner fade-in/out using synchronized transitions.
+   JS now removes leaving cards on transitionend instead of a fixed timeout.
+   ========================================================== */
+
+.person-node {
+  opacity: 0 !important;
+  transform: translateY(.42rem) scale(.975) !important;
+  filter: blur(6px) drop-shadow(0 18px 30px rgba(0,0,0,.42)) !important;
+  transition:
+    opacity .68s ease-out,
+    transform .68s cubic-bezier(.25,.46,.45,.94),
+    filter .68s ease-out !important;
+  will-change: opacity, transform, filter !important;
+}
+
+.person-node.is-visible:not(.is-leaving),
+.person-node.is-visible.is-entering {
+  opacity: 1 !important;
+  transform: translateY(0) scale(1) !important;
+  filter: blur(0) drop-shadow(0 18px 30px rgba(0,0,0,.42)) !important;
+}
+
+.person-node.is-entering {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.person-node.is-entering.is-visible {
+  pointer-events: auto !important;
+}
+
+.person-node.is-leaving {
+  opacity: 0 !important;
+  transform: translateY(-.72rem) scale(.94) !important;
+  filter: blur(9px) drop-shadow(0 18px 30px rgba(0,0,0,.42)) !important;
+  transition:
+    opacity .72s ease-in,
+    transform .72s cubic-bezier(.55,.055,.675,.19),
+    filter .72s ease-in !important;
+  pointer-events: none !important;
+  z-index: 18 !important;
+}
+
+.portrait-frame img,
+.portrait-placeholder,
+.person-name {
+  transition:
+    opacity .68s ease-out,
+    filter .68s ease-out,
+    transform .68s cubic-bezier(.25,.46,.45,.94) !important;
+}
+
+.person-node.is-leaving .portrait-frame img,
+.person-node.is-leaving .portrait-placeholder,
+.person-node.is-leaving .person-name {
+  opacity: 0 !important;
+  transform: translateY(.18rem) scale(.985) !important;
+  filter: blur(3px) grayscale(.35) !important;
+}
+
+/* Do not let focus/dim interrupt the new person's fade-in. */
+.memory-stage.is-focus-mode .person-node.is-entering,
+.memory-stage.is-focus-mode .person-node.is-entering.is-dimmed {
+  opacity: 0 !important;
+}
+
+/* Keep the focus mode emotional but not too dark during the stream. */
+.memory-stage.is-focus-mode .person-node.is-visible.is-dimmed:not(.is-leaving):not(.is-entering) {
+  opacity: .60 !important;
+  filter: blur(.25px) saturate(.88) brightness(.84) !important;
+}
+
+/* Mobile: a tiny bit quicker so taps and smaller screens feel responsive. */
+@media (max-width: 900px) and (orientation: portrait) {
+  .person-node {
+    transition:
+      opacity .58s ease-out,
+      transform .58s cubic-bezier(.25,.46,.45,.94),
+      filter .58s ease-out !important;
+  }
+
+  .person-node.is-leaving {
+    transition:
+      opacity .62s ease-in,
+      transform .62s cubic-bezier(.55,.055,.675,.19),
+      filter .62s ease-in !important;
+  }
+
+  .portrait-frame img,
+  .portrait-placeholder,
+  .person-name {
+    transition-duration: .58s !important;
+  }
+}

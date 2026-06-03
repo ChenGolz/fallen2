@@ -1,0 +1,7 @@
+V22 transitionend fade polish:
+- Keeps V21 full-line stream behavior: empty line, fill in order, then replace oldest slot.
+- ROTATE_MS is now 6.5 seconds, slightly faster.
+- CSS transition duration is now about 0.68s desktop / 0.58s mobile.
+- Leaving cards are removed using transitionend on opacity, with a fallback timeout.
+- Focus highlight waits until fade-in has finished.
+- No images folder included.

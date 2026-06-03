@@ -1,8 +1,8 @@
 "use strict";
 
 const PAGE_SIZE = 8;
-const ROTATE_MS = 8000;
-const AUTO_HIGHLIGHT_AFTER_CHANGE_MS = 3600;
+const ROTATE_MS = 6500;
+const AUTO_HIGHLIGHT_AFTER_CHANGE_MS = 2800;
 const CANDLE_KEY = "memorial-final-candles-v1";
 
 const PHOTO_OVERRIDES = {};
@@ -823,7 +823,7 @@ function scheduleFocusAfterFade(person) {
     if (!person || state.openPersonId || state.focusLocked) return;
     if (els.layer?.querySelector(".person-node.is-entering, .person-node.is-leaving")) return;
     focusPerson(person, false, "auto");
-  }, 3000);
+  }, 1200);
 }
 
 function nextPersonForSequence() {
@@ -831,6 +831,26 @@ function nextPersonForSequence() {
   const person = state.filtered[state.nextIndex % state.filtered.length];
   state.nextIndex = (state.nextIndex + 1) % state.filtered.length;
   return person;
+}
+
+function removeAfterTransition(node, fallbackMs = 950) {
+  if (!node) return;
+
+  let done = false;
+  const cleanup = () => {
+    if (done) return;
+    done = true;
+    node.removeEventListener("transitionend", onEnd);
+    if (node.isConnected) node.remove();
+    updateFocusClasses();
+  };
+
+  const onEnd = (event) => {
+    if (event.target === node && event.propertyName === "opacity") cleanup();
+  };
+
+  node.addEventListener("transitionend", onEnd);
+  window.setTimeout(cleanup, fallbackMs);
 }
 
 function nextAvailablePersonForSequence() {
@@ -912,15 +932,10 @@ function replaceNode(slotIndex, person) {
       newNode.classList.add("is-visible");
       newNode.classList.remove("is-entering");
       updateFocusClasses();
-    }, 140);
+    }, 90);
   });
 
-  if (oldNode) {
-    window.setTimeout(() => {
-      if (oldNode.isConnected) oldNode.remove();
-      updateFocusClasses();
-    }, 2350);
-  }
+  if (oldNode) removeAfterTransition(oldNode, 1050);
 }
 
 function autoHighlightVisible() {
@@ -1372,7 +1387,7 @@ function startTimer() {
   if (state.paused) return;
 
   const hasVisible = state.visible.some(Boolean);
-  const firstDelay = hasVisible ? ROTATE_MS : 650;
+  const firstDelay = hasVisible ? ROTATE_MS : 550;
 
   state.timer = window.setTimeout(function tick() {
     nextStep();
