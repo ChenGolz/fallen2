@@ -1,0 +1,8 @@
+V25 attached image flow:
+- Uses the image/card rotation behavior from the attached fallen1 version.
+- The line is full on page load.
+- Initial portraits fade in with a short stagger.
+- One slot changes at a time every 4.6 seconds.
+- The old person fades out, then the new person fades in in the same slot.
+- Keeps current data, candle quotes, summaries, search, story cards, and design.
+- No images folder included.

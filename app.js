@@ -1,7 +1,7 @@
 "use strict";
 
 const PAGE_SIZE = 8;
-const ROTATE_MS = 6500;
+const ROTATE_MS = 4600;
 const AUTO_HIGHLIGHT_AFTER_CHANGE_MS = 2800;
 const CANDLE_KEY = "memorial-final-candles-v1";
 
@@ -715,13 +715,9 @@ function applySearch(query) {
 
 function initializeVisible() {
   const count = visibleCount();
-
-  // Start from an empty line. The stream fills it in order:
-  // Ophir first, Omer second, then the rest. After the line is full,
-  // each new person replaces the oldest slot.
-  state.visible = Array.from({ length: count }, () => null);
-  state.visibleIds = new Set();
-  state.nextIndex = 0;
+  state.visible = state.filtered.slice(0, count);
+  state.visibleIds = new Set(state.visible.map((person) => person.id));
+  state.nextIndex = state.visible.length % (state.filtered.length || 1);
   state.slotCursor = 0;
   state.autoFocusIndex = 0;
   state.history = [];
@@ -741,7 +737,7 @@ function showEmptyState() {
 function renderAllVisible(options = {}) {
   els.layer.replaceChildren();
 
-  if (!state.filtered.length) {
+  if (!state.visible.length) {
     showEmptyState();
     return;
   }
@@ -753,9 +749,9 @@ function renderAllVisible(options = {}) {
     node.dataset.slotIndex = String(index);
     els.layer.append(node);
 
-    const delay = options.initial ? 0 : 160 + index * 60;
+    const delay = options.initial ? index * 100 : 120 + index * 110;
     requestAnimationFrame(() => {
-      window.setTimeout(() => node.classList.add("is-visible"), delay);
+      setTimeout(() => node.classList.add("is-visible"), delay);
     });
   });
 
@@ -884,58 +880,62 @@ function fadeOutSlot(slotIndex) {
 }
 
 function replaceOne(direction = 1) {
-  if (!state.filtered.length) return null;
+  if (!state.filtered.length || state.visible.length <= 1) return;
 
-  const count = visibleCount();
-  if (!Array.isArray(state.visible) || state.visible.length !== count) {
-    state.visible = Array.from({ length: count }, () => null);
-    state.visibleIds = new Set();
-    state.slotCursor = 0;
+  if (direction < 0 && state.history.length) {
+    const last = state.history.pop();
+    state.visible[last.slotIndex] = last.previousPerson;
+    state.visibleIds.delete(last.nextPerson.id);
+    state.visibleIds.add(last.previousPerson.id);
+    state.slotCursor = last.slotIndex;
+    replaceNode(last.slotIndex, last.previousPerson);
+    updatePathProgress();
+    return;
   }
 
-  if (direction < 0) {
-    state.nextIndex = (state.nextIndex - 2 + state.filtered.length) % state.filtered.length;
+  const slotIndex = state.slotCursor % state.visible.length;
+  const previousPerson = state.visible[slotIndex];
+  let nextPerson = nextPersonForSequence();
+  let guard = 0;
+
+  while (nextPerson && state.visibleIds.has(nextPerson.id) && guard < state.filtered.length) {
+    nextPerson = nextPersonForSequence();
+    guard += 1;
   }
 
-  const nextPerson = nextAvailablePersonForSequence();
-  if (!nextPerson) return null;
+  if (!nextPerson) return;
 
-  const enterSlot = state.slotCursor % count;
-  const previousPerson = state.visible[enterSlot] || null;
-
+  state.visible[slotIndex] = nextPerson;
   if (previousPerson) state.visibleIds.delete(previousPerson.id);
-
-  state.visible[enterSlot] = nextPerson;
   state.visibleIds.add(nextPerson.id);
-  state.history.push({ slotIndex: enterSlot, previousPerson, nextPerson });
-  state.slotCursor += 1;
+  state.history.push({ slotIndex, previousPerson, nextPerson });
+  state.slotCursor = (state.slotCursor + 1) % state.visible.length;
 
-  // While the line is being filled, no one leaves yet.
-  // After it is full, the oldest person fades out as the new person fades in in the same slot.
-  replaceNode(enterSlot, nextPerson);
+  replaceNode(slotIndex, nextPerson);
   updatePathProgress();
-  return nextPerson;
 }
 
 function replaceNode(slotIndex, person) {
-  const oldNode = els.layer.querySelector(`.person-node[data-slot-index="${slotIndex}"]:not(.is-leaving)`);
+  const oldNode = els.layer.querySelector(`.person-node[data-slot-index="${slotIndex}"]`);
   const newNode = renderPersonNode(person, slotIndex);
   newNode.dataset.slotIndex = String(slotIndex);
-  newNode.classList.add("is-entering");
 
-  if (oldNode) oldNode.classList.add("is-leaving");
+  if (!oldNode) {
+    els.layer.append(newNode);
+    requestAnimationFrame(() => newNode.classList.add("is-visible"));
+    updateFocusClasses();
+    return;
+  }
 
-  els.layer.append(newNode);
+  oldNode.classList.add("is-leaving");
 
-  requestAnimationFrame(() => {
-    window.setTimeout(() => {
+  setTimeout(() => {
+    if (oldNode.isConnected) oldNode.replaceWith(newNode);
+    requestAnimationFrame(() => {
       newNode.classList.add("is-visible");
-      newNode.classList.remove("is-entering");
       updateFocusClasses();
-    }, 90);
-  });
-
-  if (oldNode) removeAfterTransition(oldNode, 1050);
+    });
+  }, 1050);
 }
 
 function autoHighlightVisible() {
@@ -952,15 +952,11 @@ function autoHighlightVisible() {
 }
 
 function nextStep() {
-  clearFocusMode(true);
-  const person = replaceOne(1);
-  if (person) scheduleFocusAfterFade(person);
+  replaceOne(1);
 }
 
 function prevStep() {
-  clearFocusMode(true);
-  const person = replaceOne(-1);
-  if (person) scheduleFocusAfterFade(person);
+  replaceOne(-1);
 }
 
 
@@ -1383,22 +1379,13 @@ function syncStoryFromQuery() {
 
 function startTimer() {
   stopTimer();
-
-  if (state.paused) return;
-
-  const hasVisible = state.visible.some(Boolean);
-  const firstDelay = hasVisible ? ROTATE_MS : 550;
-
-  state.timer = window.setTimeout(function tick() {
-    nextStep();
-    if (!state.paused) {
-      state.timer = window.setTimeout(tick, ROTATE_MS);
-    }
-  }, firstDelay);
+  if (!state.paused) {
+    state.timer = setInterval(nextStep, ROTATE_MS);
+  }
 }
 
 function stopTimer() {
-  clearTimeout(state.timer);
+  clearInterval(state.timer);
   clearTimeout(state.startDelayTimer);
   clearTimeout(state.pendingFocusTimer);
   state.timer = null;
