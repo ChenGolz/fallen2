@@ -5937,3 +5937,42 @@ body {
     padding: .82rem .88rem !important;
   }
 }
+
+
+/* ==========================================================
+   V33 description readability polish
+   ========================================================== */
+
+.story-description {
+  display: grid !important;
+  gap: .72rem !important;
+}
+
+.story-description p {
+  font-weight: 520 !important;
+  letter-spacing: 0 !important;
+  line-height: 1.72 !important;
+  color: #241a10 !important;
+}
+
+.story-description p:first-child {
+  font-weight: 660 !important;
+  color: #17100a !important;
+}
+
+.story-description p:nth-child(2) {
+  background: rgba(255,255,255,.68) !important;
+}
+
+.story-description p:last-child {
+  font-weight: 560 !important;
+  color: #3a2916 !important;
+  border-inline-start: 3px solid rgba(158, 111, 35, .42) !important;
+}
+
+@media (max-width: 760px) {
+  .story-description p {
+    font-size: .93rem !important;
+    line-height: 1.68 !important;
+  }
+}
