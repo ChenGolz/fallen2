@@ -1,7 +1,8 @@
 "use strict";
 
 const PAGE_SIZE = 8;
-const ROTATE_MS = 4600;
+const ROTATE_MS = 18000;
+const AUTO_HIGHLIGHT_AFTER_CHANGE_MS = 6500;
 const CANDLE_KEY = "memorial-final-candles-v1";
 
 const PHOTO_OVERRIDES = {};
@@ -599,7 +600,7 @@ function focusPerson(person, locked = false, source = "manual") {
   state.focusRelatedIds = relatedIdsFor(person);
   state.focusLocked = locked;
 
-  if (ensureFamilyVisible(person)) {
+  if (source !== "auto" && ensureFamilyVisible(person)) {
     updateFocusClasses();
     return;
   }
@@ -750,7 +751,7 @@ function renderAllVisible(options = {}) {
 
   updatePathProgress();
   updateFocusClasses();
-  if (!options.skipAutoFocus) window.setTimeout(autoHighlightVisible, options.initial ? 1200 : 350);
+  if (!options.skipAutoFocus) window.setTimeout(autoHighlightVisible, options.initial ? 6500 : 5200);
   syncStoryFromQuery();
 }
 
@@ -858,25 +859,34 @@ function replaceNode(slotIndex, person) {
   if (!oldNode) {
     els.layer.append(newNode);
     requestAnimationFrame(() => {
-      newNode.classList.add("is-visible");
-      updateFocusClasses();
+      window.setTimeout(() => {
+        newNode.classList.add("is-visible");
+        updateFocusClasses();
+      }, 140);
     });
     return;
   }
 
   oldNode.classList.add("is-leaving");
-  setTimeout(() => {
+
+  // Let the old portrait fade out slowly before replacing it.
+  window.setTimeout(() => {
     if (oldNode.isConnected) oldNode.replaceWith(newNode);
+
+    // Small pause before the new portrait fades in, so the change feels calm rather than abrupt.
     requestAnimationFrame(() => {
-      newNode.classList.add("is-visible");
-      updateFocusClasses();
+      window.setTimeout(() => {
+        newNode.classList.add("is-visible");
+        updateFocusClasses();
+      }, 180);
     });
-  }, 1050);
+  }, 2350);
 }
 
 function autoHighlightVisible() {
   if (!state.visible.length || state.openPersonId || state.focusLocked) return;
-  if (Date.now() - state.lastInteractionAt < 1800) return;
+  if (els.layer?.querySelector(".person-node.is-leaving")) return;
+  if (Date.now() - state.lastInteractionAt < 7000) return;
 
   const candidates = state.visible.filter(Boolean);
   if (!candidates.length) return;
@@ -888,12 +898,12 @@ function autoHighlightVisible() {
 
 function nextStep() {
   replaceOne(1);
-  window.setTimeout(autoHighlightVisible, 1150);
+  window.setTimeout(autoHighlightVisible, AUTO_HIGHLIGHT_AFTER_CHANGE_MS);
 }
 
 function prevStep() {
   replaceOne(-1);
-  window.setTimeout(autoHighlightVisible, 1150);
+  window.setTimeout(autoHighlightVisible, AUTO_HIGHLIGHT_AFTER_CHANGE_MS);
 }
 
 
@@ -921,11 +931,40 @@ function storyText(person) {
 }
 
 function storyParagraphs(person) {
-  const text = storyText(person);
-  return text
+  const text = storyText(person)
+    .replace(/\[cite:[^\]]*\]/gu, "")
+    .replace(/^#{1,6}\s*/gmu, "")
+    .replace(/\*\*/gu, "")
+    .replace(/---+/gu, "\n\n")
+    .trim();
+
+  const base = text
     .split(/\n{2,}/u)
     .map((part) => part.replace(/\n+/gu, " ").replace(/\s+/gu, " ").trim())
     .filter(Boolean);
+
+  const paragraphs = [];
+  base.forEach((part) => {
+    if (part.length <= 520) {
+      paragraphs.push(part);
+      return;
+    }
+
+    const sentences = part.match(/[^.!?。\n]+[.!?。]?/gu) || [part];
+    let current = "";
+    sentences.forEach((sentence) => {
+      const next = `${current} ${sentence}`.trim();
+      if (next.length > 420 && current) {
+        paragraphs.push(current.trim());
+        current = sentence.trim();
+      } else {
+        current = next;
+      }
+    });
+    if (current) paragraphs.push(current.trim());
+  });
+
+  return paragraphs.filter(Boolean).slice(0, 12);
 }
 
 function compactRelativesText(person) {
@@ -1003,30 +1042,75 @@ function familyGroupSection(person) {
 
 function candleGenderText(person) {
   return isFemale(person)
-    ? { memoryFor: "לזכרה של", ageWord: "בת", blessing: "יהי זכרה ברוך" }
-    : { memoryFor: "לזכרו של", ageWord: "בן", blessing: "יהי זכרו ברוך" };
+    ? { memoryFor: "לזכרה של", childOf: "בת", born: "נולדה", killed: isGuardMember(person) ? "נפלה בקרב" : "נרצחה", blessing: "יהי זכרה צרור בצרור החיים" }
+    : { memoryFor: "לזכרו של", childOf: "בן", born: "נולד", killed: isGuardMember(person) ? "נפל בקרב" : "נרצח", blessing: "יהי זכרו צרור בצרור החיים" };
+}
+
+function candleFirstName(person) {
+  const parts = displayNameParts(person.name || "");
+  return parts[0] || "האדם האהוב";
+}
+
+function candleDisplayName(person) {
+  return `${formatDisplayName(person.name)} ז״ל`;
 }
 
 function candleQuote(person) {
   const quote = String(person.candleQuote || "").trim();
-  if (quote) return quote;
-  const first = firstName(person.name) || "האדם האהוב";
+  if (quote) return quote.replace(/[״”“"]$/u, "").replace(/^[״”“"]/u, "");
+  const first = candleFirstName(person);
   return isFemale(person)
-    ? `אורה של ${first} יוסיף להאיר בלב אוהביה, בטוב שהעניקה ובאהבה שהותירה אחריה.`
-    : `אורו של ${first} יוסיף להאיר בלב אוהביו, בטוב שהעניק ובאהבה שהותיר אחריו.`;
+    ? `${first} תיזכר כאישה של אור, לב רחב, אהבה ונתינה, שהותירה אחריה חותם עמוק בלב אוהביה.`
+    : `${first} ייזכר כאדם של אור, לב רחב, אהבה ונתינה, שהותיר אחריו חותם עמוק בלב אוהביו.`;
+}
+
+function candleMemoryLine(person) {
+  const line = String(person.candleMemoryLine || "").trim();
+  if (line) return line.replace(/[״”“"]$/u, "").replace(/^[״”“"]/u, "");
+  const first = candleFirstName(person);
+  return isFemale(person)
+    ? `האור, הטוב והאהבה של ${first} ימשיכו להאיר בלב אוהביה לנצח.`
+    : `האור, הטוב והאהבה של ${first} ימשיכו להאיר בלב אוהביו לנצח.`;
+}
+
+function candleParentLine(person) {
+  const line = String(person.candleParentLine || "").trim();
+  if (line) return line;
+  const parents = String(person.parents || person.familyMembers?.parents || "").trim();
+  if (parents) return `${candleGenderText(person).childOf} ${parents}`;
+  return isFemale(person)
+    ? "מוקדש באהבה לבנות ובני המשפחה ולאוהביה"
+    : "מוקדש באהבה לבני המשפחה ולאוהביו";
+}
+
+function candleDatesLine(person) {
+  const line = String(person.candleDatesLine || "").trim();
+  if (line) return line;
+  const gender = candleGenderText(person);
+  const birth = String(person.birthDate || "לא צוין").trim();
+  const death = String(person.deathDate || "כ״ב בתשרי תשפ״ד").trim();
+  return `${gender.born}: ${birth} | ${gender.killed}: ${death}`;
+}
+
+function candlePrintData(person) {
+  const gender = candleGenderText(person);
+  return {
+    title: String(person.candlePrintTitle || `${gender.memoryFor} ${candleDisplayName(person)}`).trim(),
+    parent: candleParentLine(person),
+    dates: candleDatesLine(person),
+    quote: candleQuote(person),
+    memory: candleMemoryLine(person),
+    blessing: String(person.candlePrintBlessing || gender.blessing).trim(),
+  };
 }
 
 function candlePrintLines(person) {
-  const gender = candleGenderText(person);
-  const title = String(person.candlePrintTitle || `${gender.memoryFor} ${formatDisplayName(person.name)}`).trim();
-  const subtitle = String(person.candlePrintSubtitle || [person.community, getAge(person) !== null ? `${gender.ageWord} ${getAge(person)}` : ""].filter(Boolean).join(" · ")).trim();
-  const quote = candleQuote(person);
-  const blessing = String(person.candlePrintBlessing || gender.blessing).trim();
-  return [title, subtitle, `״${quote}״`, blessing].filter(Boolean);
+  const data = candlePrintData(person);
+  return [data.title, data.parent, data.dates, `״${data.quote}״`, `״${data.memory}״`, data.blessing].filter(Boolean);
 }
 
 function printCandleLabel(person) {
-  const lines = candlePrintLines(person);
+  const data = candlePrintData(person);
   const escapeHtml = (value) => String(value || "")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
@@ -1037,53 +1121,65 @@ function printCandleLabel(person) {
 <html lang="he" dir="rtl">
 <head>
 <meta charset="utf-8" />
-<title>${escapeHtml(lines[0] || "תווית לנר זיכרון")}</title>
+<title>${escapeHtml(data.title || "תווית לנר זיכרון")}</title>
 <style>
-  @page { size: 70mm 95mm; margin: 6mm; }
+  @page { size: 80mm 110mm; margin: 7mm; }
   * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
   body {
-    margin: 0;
     min-height: 100vh;
     display: grid;
     place-items: center;
-    background: #f7f5ef;
-    color: #182535;
+    background: #f6f1e7;
+    color: #172836;
     font-family: "Noto Sans Hebrew", Arial, sans-serif;
   }
   .label {
-    width: 62mm;
-    min-height: 82mm;
-    border: 1.4mm solid #c8aa62;
+    width: 66mm;
+    min-height: 92mm;
+    border: 1.3mm solid #c5a760;
     border-radius: 8mm;
-    padding: 8mm 6mm;
+    padding: 7mm 5.5mm;
     display: grid;
     align-content: center;
-    gap: 4mm;
+    gap: 3.2mm;
     text-align: center;
-    background: linear-gradient(180deg, #fffdf7, #eef4f6);
+    background: linear-gradient(180deg, #fffdf8, #eef4f6);
+    box-shadow: inset 0 0 0 .35mm rgba(255,255,255,.9);
   }
-  .title { font-size: 16pt; font-weight: 800; line-height: 1.25; }
-  .subtitle { font-size: 10.5pt; color: #496272; }
-  .quote { font-size: 12pt; line-height: 1.45; font-weight: 650; }
-  .blessing { font-size: 11pt; font-weight: 700; color: #324956; }
-  .flame { font-size: 20pt; color: #b8862b; line-height: 1; }
+  .flame { font-size: 21pt; color: #b8862b; line-height: 1; }
+  .title, .parent, .dates, .memory, .blessing { font-weight: 800; }
+  .title { font-size: 15pt; line-height: 1.25; }
+  .parent { font-size: 11.5pt; line-height: 1.35; }
+  .dates { font-size: 10.4pt; line-height: 1.45; color: #3d5969; }
+  .quote { font-size: 11.2pt; line-height: 1.45; font-style: italic; color: #233f4e; }
+  .memory { font-size: 11pt; line-height: 1.5; color: #1b3442; }
+  .blessing { font-size: 11.2pt; color: #253f4d; }
+  .divider { height: 1px; width: 70%; margin: 1mm auto; background: linear-gradient(90deg, transparent, #c5a760, transparent); }
+  @media print {
+    body { background: white; }
+    .label { box-shadow: none; break-inside: avoid; page-break-inside: avoid; }
+  }
 </style>
 </head>
 <body>
   <section class="label">
     <div class="flame">🕯️</div>
-    <div class="title">${escapeHtml(lines[0] || "")}</div>
-    ${lines[1] ? `<div class="subtitle">${escapeHtml(lines[1])}</div>` : ""}
-    <div class="quote">${escapeHtml(lines[2] || "")}</div>
-    <div class="blessing">${escapeHtml(lines[3] || "")}</div>
+    <div class="title">${escapeHtml(data.title)}</div>
+    <div class="parent">${escapeHtml(data.parent)}</div>
+    <div class="dates">${escapeHtml(data.dates)}</div>
+    <div class="divider"></div>
+    <div class="quote">״${escapeHtml(data.quote)}״</div>
+    <div class="memory">״${escapeHtml(data.memory)}״</div>
+    <div class="blessing">${escapeHtml(data.blessing)}</div>
   </section>
 <script>window.onload = () => { window.focus(); window.print(); };</script>
 </body>
 </html>`;
 
-  const printWindow = window.open("", "_blank", "noopener,noreferrer,width=480,height=640");
+  const printWindow = window.open("", "_blank", "noopener,noreferrer,width=520,height=720");
   if (!printWindow) {
-    alert(lines.join("\n"));
+    alert(candlePrintLines(person).join("\n"));
     return;
   }
   printWindow.document.open();
@@ -1092,23 +1188,29 @@ function printCandleLabel(person) {
 }
 
 function candlePrintSection(person) {
-  const quote = candleQuote(person);
+  const data = candlePrintData(person);
   return el("section", { class: "candle-print-card", "aria-label": `תווית לנר זיכרון עבור ${formatDisplayName(person.name)}` },
-    el("div", { class: "candle-print-copy" },
-      el("span", { class: "candle-print-kicker", text: "תווית לנר זיכרון" }),
-      el("p", { class: "candle-print-quote", text: `״${quote}״` }),
-      person.candleQuoteSource === "personal_or_source_sentence"
-        ? el("span", { class: "candle-print-source", text: "משפט אישי או משפט מזוהה מתוך החומרים שנמסרו" })
-        : el("span", { class: "candle-print-source", text: "נוסח עדין להנצחה על נר" })
+    el("div", { class: "candle-label-preview" },
+      el("div", { class: "candle-print-heading-row" },
+        el("span", { class: "candle-print-kicker", text: "תווית נר זיכרון (להדפסה)" })
+      ),
+      el("p", { class: "candle-print-help", text: "ניתן להדפיס את הטקסט הבא ולהדביק על נר זיכרון:" }),
+      el("div", { class: "candle-label-lines" },
+        el("strong", { text: data.title }),
+        el("strong", { text: data.parent }),
+        el("strong", { text: data.dates }),
+        el("em", { text: `״${data.quote}״` }),
+        el("strong", { text: `״${data.memory}״` }),
+        el("strong", { text: data.blessing })
+      )
     ),
     el("button", {
       class: "candle-print-button",
       type: "button",
       onClick: () => printCandleLabel(person),
-    }, "הדפסת תווית לנר")
+    }, "הדפסה / שמירה ל‑PDF")
   );
 }
-
 
 function storyDetails(person) {
   const items = [

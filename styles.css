@@ -4829,3 +4829,171 @@ body {
     justify-self: stretch;
   }
 }
+
+
+/* V16: slower auto movement, cleaner description, full printable candle label preview */
+.story-description {
+  gap: 1.05rem !important;
+  max-width: 68ch;
+}
+
+.story-description p {
+  line-height: 1.92 !important;
+  font-size: clamp(1rem, 1.08vw, 1.1rem) !important;
+  color: rgba(41, 66, 80, .92) !important;
+  text-align: right;
+}
+
+.story-description p:first-child {
+  font-size: clamp(1.04rem, 1.16vw, 1.18rem) !important;
+  color: rgba(20, 39, 51, .96) !important;
+  font-weight: 750 !important;
+}
+
+.candle-print-card {
+  align-items: stretch !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  padding: 1.05rem !important;
+  border-radius: 1.35rem !important;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255, 232, 166, .18), transparent 46%),
+    linear-gradient(135deg, rgba(255,255,255,.72), rgba(225,238,244,.50)) !important;
+}
+
+.candle-label-preview {
+  display: grid;
+  gap: .65rem;
+}
+
+.candle-print-help {
+  margin: 0;
+  font-size: .92rem;
+  line-height: 1.55;
+  color: rgba(62, 88, 102, .78);
+}
+
+.candle-label-lines {
+  display: grid;
+  gap: .34rem;
+  padding: .9rem .95rem;
+  border-radius: 1rem;
+  text-align: center;
+  background: linear-gradient(180deg, rgba(255,255,255,.72), rgba(238,246,249,.64));
+  border: 1px solid rgba(139, 164, 177, .28);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.75);
+}
+
+.candle-label-lines strong,
+.candle-label-lines em {
+  display: block;
+  color: rgba(24, 45, 57, .94);
+}
+
+.candle-label-lines strong {
+  font-weight: 850;
+}
+
+.candle-label-lines em {
+  font-style: italic;
+  font-weight: 650;
+  line-height: 1.55;
+  color: rgba(42, 65, 78, .92);
+}
+
+.candle-print-button {
+  align-self: center !important;
+  min-width: 10.8rem;
+}
+
+@media (max-width: 900px) and (orientation: portrait) {
+  .story-description {
+    max-width: none;
+    gap: .82rem !important;
+  }
+  .story-description p {
+    font-size: .95rem !important;
+    line-height: 1.72 !important;
+  }
+  .candle-print-card {
+    grid-template-columns: 1fr !important;
+    padding: .9rem !important;
+    gap: .85rem !important;
+  }
+  .candle-label-lines {
+    padding: .75rem .7rem;
+    gap: .28rem;
+  }
+  .candle-label-lines strong,
+  .candle-label-lines em {
+    font-size: .91rem;
+    line-height: 1.45;
+  }
+  .candle-print-button {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+
+/* ==========================================================
+   V17 slow fade rotation:
+   Smoother, slower visual transitions for changing people/images.
+   ========================================================== */
+
+.person-node {
+  transition:
+    opacity 2.35s cubic-bezier(.22,.8,.24,1),
+    transform 2.35s cubic-bezier(.22,.8,.24,1),
+    filter 2.35s cubic-bezier(.22,.8,.24,1) !important;
+}
+
+.person-node.is-visible {
+  opacity: 1 !important;
+  transform: translateY(0) scale(1) !important;
+  filter: blur(0) drop-shadow(0 18px 30px rgba(0,0,0,.42)) !important;
+}
+
+.person-node.is-leaving {
+  opacity: 0 !important;
+  transform: translateY(.35rem) scale(.965) !important;
+  filter: blur(7px) drop-shadow(0 18px 30px rgba(0,0,0,.42)) !important;
+  pointer-events: none !important;
+}
+
+.portrait-frame img,
+.portrait-placeholder {
+  transition:
+    opacity 2.2s cubic-bezier(.22,.8,.24,1),
+    filter 2.2s cubic-bezier(.22,.8,.24,1),
+    transform 2.2s cubic-bezier(.22,.8,.24,1) !important;
+}
+
+.person-node.is-leaving .portrait-frame img,
+.person-node.is-leaving .portrait-placeholder {
+  opacity: 0 !important;
+  filter: grayscale(1) blur(3px) !important;
+  transform: scale(.985) !important;
+}
+
+.person-name {
+  transition:
+    opacity 2.15s cubic-bezier(.22,.8,.24,1),
+    transform 2.15s cubic-bezier(.22,.8,.24,1),
+    filter 2.15s cubic-bezier(.22,.8,.24,1) !important;
+}
+
+.person-node.is-leaving .person-name {
+  opacity: 0 !important;
+  transform: translateY(.45rem) !important;
+  filter: blur(3px) !important;
+}
+
+/* Mobile gets a slightly shorter fade so it still feels responsive */
+@media (max-width: 900px) and (orientation: portrait) {
+  .person-node,
+  .portrait-frame img,
+  .portrait-placeholder,
+  .person-name {
+    transition-duration: 1.95s !important;
+  }
+}

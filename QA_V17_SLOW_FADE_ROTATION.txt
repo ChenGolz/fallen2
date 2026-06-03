@@ -1,0 +1,8 @@
+V17 slow fade rotation QA notes:
+- ROTATE_MS changed to 18 seconds.
+- Auto-highlight delay changed to 6.5 seconds after a change.
+- Auto-highlight will not run while a card is fading out.
+- Old portrait now fades out for 2.35 seconds before replacement.
+- New portrait fades in after a short 180ms pause.
+- CSS transitions for portrait, name tag and full node were slowed and softened.
+- No images folder included by request.
