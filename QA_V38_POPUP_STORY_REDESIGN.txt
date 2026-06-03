@@ -1,0 +1,9 @@
+V38 popup redesign and richer text:
+- Kept V37 interaction/hover/search/click fixes.
+- Rebuilt popup descriptions into 3 labeled sections: בכמה מילים, האדם שמאחורי השם, יום הזיכרון.
+- Text is longer than V37 but still structured and readable.
+- Used clean structured fields plus safe life-detail sentences where available; source/admin/date fragments are filtered out.
+- Redesigned story popup as a warmer editorial memorial card with labeled story blocks.
+- Added popup_text_v38_report.csv for review of old/new character counts.
+- JS syntax checked with node -c app.js.
+- No images folder included.

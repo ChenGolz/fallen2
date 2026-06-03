@@ -1400,6 +1400,16 @@ function storyParagraphs(person) {
   return paragraphs.filter(Boolean).slice(0, 12);
 }
 
+function storyParagraphNode(paragraph, index) {
+  const match = String(paragraph || "").match(/^([^:：]{2,28})[:：]\s*(.+)$/u);
+  if (!match) return el("p", { text: paragraph });
+
+  return el("p", { class: `story-paragraph story-paragraph-${index + 1}` },
+    el("span", { class: "story-paragraph-label", text: match[1] }),
+    el("span", { class: "story-paragraph-text", text: match[2] })
+  );
+}
+
 function compactRelativesText(person) {
   const lines = relativesLines(person);
   if (!lines.length) return "";
@@ -1762,7 +1772,7 @@ function renderStory(person) {
           guardLabel(person) ? el("span", { text: guardLabel(person) }) : null
         ),
         el("div", { class: "story-description" },
-          storyParagraphs(person).map((paragraph) => el("p", { text: paragraph }))
+          storyParagraphs(person).map((paragraph, index) => storyParagraphNode(paragraph, index))
         ),
         el("div", { class: "story-actions" }, candleBtn)
       )

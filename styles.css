@@ -6347,3 +6347,249 @@ body {
     opacity 0.28s ease,
     box-shadow 0.28s ease !important;
 }
+
+
+/* ==========================================================
+   V38 popup redesign + richer story text
+   Design: warm editorial memorial card with labeled story sections.
+   ========================================================== */
+
+.story-overlay {
+  padding: clamp(.8rem, 2.2vw, 1.6rem) !important;
+  background:
+    radial-gradient(circle at 20% 10%, rgba(218, 174, 88, .18), transparent 23rem),
+    rgba(3, 9, 16, .82) !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+.story-panel {
+  width: min(74rem, 95vw) !important;
+  max-height: 92vh !important;
+  overflow: auto !important;
+  border-radius: 1.8rem !important;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.94), rgba(255,249,236,.98) 38%, rgba(239,229,207,.97)) !important;
+  color: #1f170f !important;
+  border: 1px solid rgba(166, 119, 44, .28) !important;
+  box-shadow:
+    0 34px 95px rgba(0,0,0,.52),
+    inset 0 1px 0 rgba(255,255,255,.76) !important;
+}
+
+.story-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    linear-gradient(90deg, rgba(178, 126, 38, .22), transparent 12rem),
+    radial-gradient(circle at 100% 0%, rgba(255, 226, 155, .22), transparent 16rem);
+  opacity: .9;
+}
+
+.story-grid-head {
+  position: relative !important;
+  z-index: 1 !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(14rem, 18rem) !important;
+  gap: clamp(1.1rem, 2.5vw, 2rem) !important;
+  padding: clamp(1.15rem, 2.3vw, 1.85rem) !important;
+  align-items: start !important;
+}
+
+.story-photo {
+  grid-column: 2 !important;
+  grid-row: 1 !important;
+  align-self: start !important;
+  border-radius: 1.5rem !important;
+  overflow: hidden !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.78), rgba(240,222,181,.62)) !important;
+  border: 1px solid rgba(143, 99, 31, .18) !important;
+  box-shadow:
+    0 20px 42px rgba(36, 23, 10, .18),
+    inset 0 1px 0 rgba(255,255,255,.74) !important;
+  padding: .55rem !important;
+}
+
+.story-photo img,
+.story-photo .portrait-placeholder {
+  border-radius: 1.05rem !important;
+}
+
+.story-copy {
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+  min-width: 0 !important;
+}
+
+.story-copy h2,
+#story-title {
+  color: #17100a !important;
+  font-size: clamp(2.35rem, 5.8vw, 4.9rem) !important;
+  line-height: .98 !important;
+  margin: .05rem 0 .55rem !important;
+  letter-spacing: -.055em !important;
+}
+
+.story-meta {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: .45rem !important;
+  margin: .15rem 0 1rem !important;
+}
+
+.story-meta span {
+  color: #543713 !important;
+  background: rgba(136, 91, 27, .10) !important;
+  border: 1px solid rgba(136, 91, 27, .17) !important;
+  border-radius: 999px !important;
+  padding: .42rem .7rem !important;
+  font-weight: 720 !important;
+}
+
+.story-description {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: .72rem !important;
+  margin: .2rem 0 0 !important;
+}
+
+.story-description p {
+  position: relative !important;
+  margin: 0 !important;
+  padding: .92rem 1rem .95rem !important;
+  border-radius: 1.05rem !important;
+  line-height: 1.74 !important;
+  font-size: clamp(.98rem, 1.04vw, 1.07rem) !important;
+  color: #241a10 !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.82), rgba(255,249,236,.68)) !important;
+  border: 1px solid rgba(132, 94, 35, .14) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.75),
+    0 10px 26px rgba(58, 38, 13, .055) !important;
+  text-shadow: none !important;
+}
+
+.story-paragraph {
+  display: grid !important;
+  gap: .38rem !important;
+}
+
+.story-paragraph-label {
+  display: inline-flex !important;
+  width: fit-content !important;
+  align-items: center !important;
+  color: #6b4619 !important;
+  background: rgba(190, 138, 45, .14) !important;
+  border: 1px solid rgba(190, 138, 45, .18) !important;
+  border-radius: 999px !important;
+  padding: .18rem .58rem !important;
+  font-size: .78rem !important;
+  font-weight: 850 !important;
+  letter-spacing: .02em !important;
+}
+
+.story-paragraph-text {
+  color: #241a10 !important;
+  font-weight: 520 !important;
+}
+
+.story-paragraph-1 {
+  border-inline-start: 4px solid rgba(176, 126, 45, .50) !important;
+}
+
+.story-paragraph-2 {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.74), rgba(254,244,221,.72)) !important;
+}
+
+.story-paragraph-3 {
+  background:
+    linear-gradient(180deg, rgba(255,252,246,.86), rgba(242,229,205,.78)) !important;
+  border-inline-start: 4px solid rgba(111, 78, 31, .44) !important;
+}
+
+.story-actions {
+  margin-top: 1rem !important;
+}
+
+.story-actions button,
+.candle-print-button {
+  color: #241a10 !important;
+  background: linear-gradient(180deg, rgba(255,255,255,.96), rgba(232,215,179,.88)) !important;
+  border: 1px solid rgba(123, 83, 25, .18) !important;
+  box-shadow: 0 8px 20px rgba(64,42,16,.08), inset 0 1px 0 rgba(255,255,255,.75) !important;
+}
+
+/* Lower sections become calmer secondary panels */
+.candle-print-card,
+.family-group-card,
+.relatives-card,
+.details-grid {
+  position: relative !important;
+  z-index: 1 !important;
+  margin-inline: clamp(1.15rem, 2.3vw, 1.85rem) !important;
+}
+
+.close-story {
+  z-index: 3 !important;
+  color: #241a10 !important;
+  background: rgba(255,255,255,.88) !important;
+  border: 1px solid rgba(123, 83, 25, .16) !important;
+  box-shadow: 0 12px 26px rgba(35,24,12,.15) !important;
+}
+
+@media (max-width: 900px) {
+  .story-panel {
+    width: min(94vw, 36rem) !important;
+    border-radius: 1.35rem !important;
+  }
+
+  .story-grid-head {
+    grid-template-columns: 1fr !important;
+    gap: .95rem !important;
+    padding: 1rem !important;
+  }
+
+  .story-photo,
+  .story-copy {
+    grid-column: 1 !important;
+  }
+
+  .story-photo {
+    grid-row: 1 !important;
+    width: min(70vw, 14.5rem) !important;
+    justify-self: center !important;
+  }
+
+  .story-copy {
+    grid-row: 2 !important;
+  }
+
+  .story-copy h2,
+  #story-title {
+    text-align: center !important;
+    font-size: clamp(2.1rem, 12vw, 3.25rem) !important;
+  }
+
+  .story-meta,
+  .story-actions {
+    justify-content: center !important;
+  }
+
+  .story-description p {
+    font-size: .94rem !important;
+    line-height: 1.67 !important;
+    padding: .82rem .86rem !important;
+  }
+
+  .candle-print-card,
+  .family-group-card,
+  .relatives-card,
+  .details-grid {
+    margin-inline: 1rem !important;
+  }
+}
