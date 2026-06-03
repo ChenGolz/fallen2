@@ -5190,3 +5190,77 @@ body {
     transition-duration: 2.15s !important;
   }
 }
+
+
+/* ==========================================================
+   V21 full-line stream:
+   Empty line → fill line in order → then replace oldest slot.
+   Slightly faster than V20, with complete fade-in.
+   ========================================================== */
+
+.person-node {
+  opacity: 0 !important;
+  transform: translateY(.52rem) scale(.97) !important;
+  filter: blur(7px) drop-shadow(0 18px 30px rgba(0,0,0,.42)) !important;
+  transition:
+    opacity 2.35s cubic-bezier(.22,.8,.24,1),
+    transform 2.35s cubic-bezier(.22,.8,.24,1),
+    filter 2.35s cubic-bezier(.22,.8,.24,1) !important;
+}
+
+.person-node.is-visible:not(.is-leaving),
+.person-node.is-visible.is-entering {
+  opacity: 1 !important;
+  transform: translateY(0) scale(1) !important;
+  filter: blur(0) drop-shadow(0 18px 30px rgba(0,0,0,.42)) !important;
+}
+
+.person-node.is-entering {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.person-node.is-leaving {
+  opacity: 0 !important;
+  transform: translateY(-.25rem) scale(.975) !important;
+  filter: blur(8px) drop-shadow(0 18px 30px rgba(0,0,0,.42)) !important;
+  pointer-events: none !important;
+  z-index: 18 !important;
+}
+
+.portrait-frame img,
+.portrait-placeholder,
+.person-name {
+  transition:
+    opacity 2.25s cubic-bezier(.22,.8,.24,1),
+    filter 2.25s cubic-bezier(.22,.8,.24,1),
+    transform 2.25s cubic-bezier(.22,.8,.24,1) !important;
+}
+
+.person-node.is-leaving .portrait-frame img,
+.person-node.is-leaving .portrait-placeholder,
+.person-node.is-leaving .person-name {
+  opacity: 0 !important;
+  filter: blur(3px) grayscale(.45) !important;
+}
+
+/* Do not let focus/dim interrupt a new fade-in. */
+.memory-stage.is-focus-mode .person-node.is-entering,
+.memory-stage.is-focus-mode .person-node.is-entering.is-dimmed {
+  opacity: 0 !important;
+}
+
+/* Keep dimming gentle so family members still feel present. */
+.memory-stage.is-focus-mode .person-node.is-visible.is-dimmed:not(.is-leaving):not(.is-entering) {
+  opacity: .58 !important;
+  filter: blur(.35px) saturate(.86) brightness(.82) !important;
+}
+
+@media (max-width: 900px) and (orientation: portrait) {
+  .person-node,
+  .portrait-frame img,
+  .portrait-placeholder,
+  .person-name {
+    transition-duration: 2.0s !important;
+  }
+}

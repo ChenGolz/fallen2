@@ -1,0 +1,8 @@
+V21 full-line stream:
+- Page starts with empty line.
+- Ophir appears first, then Omer, then the rest in order.
+- No one fades out while the line is still being filled.
+- Once the line is full, the next person fades in exactly where the oldest person fades out.
+- Rotation is 8 seconds per step.
+- Family members remain visible naturally because the full line holds previous entries while the rest of the family enters.
+- No images folder included.

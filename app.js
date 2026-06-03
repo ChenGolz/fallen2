@@ -1,9 +1,8 @@
 "use strict";
 
 const PAGE_SIZE = 8;
-const ROTATE_MS = 9000;
-const ACTIVE_LIFESPAN_STEPS = 2;
-const AUTO_HIGHLIGHT_AFTER_CHANGE_MS = 3200;
+const ROTATE_MS = 8000;
+const AUTO_HIGHLIGHT_AFTER_CHANGE_MS = 3600;
 const CANDLE_KEY = "memorial-final-candles-v1";
 
 const PHOTO_OVERRIDES = {};
@@ -717,8 +716,9 @@ function applySearch(query) {
 function initializeVisible() {
   const count = visibleCount();
 
-  // Start with an empty line. The timer will stream people in:
-  // Ophir first, Omer second, then Aviv while Ophir fades out, and so on.
+  // Start from an empty line. The stream fills it in order:
+  // Ophir first, Omer second, then the rest. After the line is full,
+  // each new person replaces the oldest slot.
   state.visible = Array.from({ length: count }, () => null);
   state.visibleIds = new Set();
   state.nextIndex = 0;
@@ -753,7 +753,7 @@ function renderAllVisible(options = {}) {
     node.dataset.slotIndex = String(index);
     els.layer.append(node);
 
-    const delay = options.initial ? 0 : 180 + index * 70;
+    const delay = options.initial ? 0 : 160 + index * 60;
     requestAnimationFrame(() => {
       window.setTimeout(() => node.classList.add("is-visible"), delay);
     });
@@ -761,11 +761,6 @@ function renderAllVisible(options = {}) {
 
   updatePathProgress();
   updateFocusClasses();
-
-  if (!options.skipAutoFocus && state.visible.some(Boolean)) {
-    window.setTimeout(autoHighlightVisible, 5200);
-  }
-
   syncStoryFromQuery();
 }
 
@@ -828,7 +823,7 @@ function scheduleFocusAfterFade(person) {
     if (!person || state.openPersonId || state.focusLocked) return;
     if (els.layer?.querySelector(".person-node.is-entering, .person-node.is-leaving")) return;
     focusPerson(person, false, "auto");
-  }, 3300);
+  }, 3000);
 }
 
 function nextPersonForSequence() {
@@ -869,7 +864,7 @@ function fadeOutSlot(slotIndex) {
 }
 
 function replaceOne(direction = 1) {
-  if (!state.filtered.length) return;
+  if (!state.filtered.length) return null;
 
   const count = visibleCount();
   if (!Array.isArray(state.visible) || state.visible.length !== count) {
@@ -878,36 +873,25 @@ function replaceOne(direction = 1) {
     state.slotCursor = 0;
   }
 
-  // Previous button restarts the calm stream one step earlier.
   if (direction < 0) {
     state.nextIndex = (state.nextIndex - 2 + state.filtered.length) % state.filtered.length;
   }
 
   const nextPerson = nextAvailablePersonForSequence();
-  if (!nextPerson) return;
+  if (!nextPerson) return null;
 
-  const step = state.slotCursor;
-  const enterSlot = step % count;
-  const exitSlot = step >= ACTIVE_LIFESPAN_STEPS
-    ? (step - ACTIVE_LIFESPAN_STEPS) % count
-    : -1;
-
-  const exitingPerson = exitSlot >= 0 ? state.visible[exitSlot] : null;
-
-  // When the third person appears, the first fades out; when the fourth appears,
-  // the second fades out, so every person gets the same time on screen.
-  if (exitSlot >= 0 && exitSlot !== enterSlot) {
-    fadeOutSlot(exitSlot);
-  }
-
+  const enterSlot = state.slotCursor % count;
   const previousPerson = state.visible[enterSlot] || null;
+
   if (previousPerson) state.visibleIds.delete(previousPerson.id);
 
   state.visible[enterSlot] = nextPerson;
   state.visibleIds.add(nextPerson.id);
-  state.history.push({ slotIndex: enterSlot, previousPerson, nextPerson, exitSlot, exitingPerson });
+  state.history.push({ slotIndex: enterSlot, previousPerson, nextPerson });
   state.slotCursor += 1;
 
+  // While the line is being filled, no one leaves yet.
+  // After it is full, the oldest person fades out as the new person fades in in the same slot.
   replaceNode(enterSlot, nextPerson);
   updatePathProgress();
   return nextPerson;
@@ -928,14 +912,14 @@ function replaceNode(slotIndex, person) {
       newNode.classList.add("is-visible");
       newNode.classList.remove("is-entering");
       updateFocusClasses();
-    }, 160);
+    }, 140);
   });
 
   if (oldNode) {
     window.setTimeout(() => {
       if (oldNode.isConnected) oldNode.remove();
       updateFocusClasses();
-    }, 2400);
+    }, 2350);
   }
 }
 
@@ -1388,7 +1372,7 @@ function startTimer() {
   if (state.paused) return;
 
   const hasVisible = state.visible.some(Boolean);
-  const firstDelay = hasVisible ? ROTATE_MS : 850;
+  const firstDelay = hasVisible ? ROTATE_MS : 650;
 
   state.timer = window.setTimeout(function tick() {
     nextStep();
