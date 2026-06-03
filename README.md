@@ -162,3 +162,31 @@ V12 updated descriptions + auto family highlight:
 - Added automatic focus/highlight cycling when user does not click.
 - Family/group members are highlighted together where relationship data is present.
 - images/ folder omitted.
+
+
+V16:
+- Slowed automatic card/image rotation to 11 seconds.
+- Automatic highlight no longer reshuffles visible cards; family members already visible are highlighted together.
+- Full printable memorial candle label with title, parents, dates, quote, memorial line, blessing.
+- Print button opens browser print dialog so the user can choose Save to PDF.
+- Improved story text and candle label visual styling.
+
+
+V17 slow fade rotation:
+- Slower 18s rotation.
+- Smooth fade-out / fade-in between changing people.
+- Auto-highlight delayed and prevented during fade transitions.
+- Cache-busting updated in index.html.
+
+
+V18 sequential crossfade:
+- Initial line starts empty and people fade in one by one.
+- Slot changes now crossfade instead of remove-then-add.
+- Cache-busting updated.
+
+
+V19 streaming equal-time:
+- Empty-line start.
+- Streaming sequence with equal time for each person.
+- Ophir → Omer → Aviv while Ophir out → Livnat while Omer out.
+- Cache-busting updated.

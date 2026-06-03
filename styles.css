@@ -5128,3 +5128,65 @@ body {
     transition-duration: 1.85s !important;
   }
 }
+
+
+/* ==========================================================
+   V20 fade completion fix:
+   New portraits are never dimmed while they are fading in.
+   Each streamed person now reaches full opacity before focus mode can dim others.
+   ========================================================== */
+
+.person-node.is-entering,
+.person-node.is-entering.is-dimmed,
+.person-node.is-entering.is-related,
+.person-node.is-entering.is-focused {
+  opacity: 0 !important;
+  filter: blur(7px) drop-shadow(0 18px 30px rgba(0,0,0,.42)) !important;
+}
+
+.person-node.is-visible:not(.is-leaving) {
+  opacity: 1 !important;
+}
+
+.person-node.is-visible.is-entering {
+  opacity: 1 !important;
+  filter: blur(0) drop-shadow(0 18px 30px rgba(0,0,0,.42)) !important;
+}
+
+/* Do not let focus/dim styling interrupt an entering fade. */
+.memory-stage.is-focus-mode .person-node.is-entering,
+.memory-stage.is-focus-mode .person-node.is-entering.is-dimmed {
+  opacity: 0 !important;
+}
+
+/* Make focus mode gentler during the streaming display. */
+.memory-stage.is-focus-mode .person-node.is-visible.is-dimmed:not(.is-leaving):not(.is-entering) {
+  opacity: .52 !important;
+  filter: blur(.5px) saturate(.82) brightness(.78) !important;
+}
+
+/* Slightly slower fade so every portrait reaches full visibility clearly. */
+.person-node {
+  transition:
+    opacity 2.55s cubic-bezier(.22,.8,.24,1),
+    transform 2.55s cubic-bezier(.22,.8,.24,1),
+    filter 2.55s cubic-bezier(.22,.8,.24,1) !important;
+}
+
+.portrait-frame img,
+.portrait-placeholder,
+.person-name {
+  transition:
+    opacity 2.45s cubic-bezier(.22,.8,.24,1),
+    filter 2.45s cubic-bezier(.22,.8,.24,1),
+    transform 2.45s cubic-bezier(.22,.8,.24,1) !important;
+}
+
+@media (max-width: 900px) and (orientation: portrait) {
+  .person-node,
+  .portrait-frame img,
+  .portrait-placeholder,
+  .person-name {
+    transition-duration: 2.15s !important;
+  }
+}

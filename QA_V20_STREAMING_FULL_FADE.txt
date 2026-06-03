@@ -1,0 +1,7 @@
+V20 streaming full fade fix:
+- ROTATE_MS increased to 9 seconds.
+- Before every new entry, previous focus mode is cleared so the new portrait is not dimmed during fade-in.
+- The newly entered person is focused only after the fade has fully completed.
+- Entering cards are protected from focus/dim CSS.
+- Dimmed cards are gentler so they do not look like failed loads.
+- No images folder included.

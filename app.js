@@ -1,9 +1,9 @@
 "use strict";
 
 const PAGE_SIZE = 8;
-const ROTATE_MS = 7000;
+const ROTATE_MS = 9000;
 const ACTIVE_LIFESPAN_STEPS = 2;
-const AUTO_HIGHLIGHT_AFTER_CHANGE_MS = 4500;
+const AUTO_HIGHLIGHT_AFTER_CHANGE_MS = 3200;
 const CANDLE_KEY = "memorial-final-candles-v1";
 
 const PHOTO_OVERRIDES = {};
@@ -39,6 +39,7 @@ const state = {
   paused: false,
   timer: null,
   startDelayTimer: null,
+  pendingFocusTimer: null,
   openPersonId: null,
   focusPersonId: null,
   focusRelatedIds: new Set(),
@@ -821,6 +822,15 @@ function renderPersonNode(person, index) {
   return node;
 }
 
+function scheduleFocusAfterFade(person) {
+  clearTimeout(state.pendingFocusTimer);
+  state.pendingFocusTimer = window.setTimeout(() => {
+    if (!person || state.openPersonId || state.focusLocked) return;
+    if (els.layer?.querySelector(".person-node.is-entering, .person-node.is-leaving")) return;
+    focusPerson(person, false, "auto");
+  }, 3300);
+}
+
 function nextPersonForSequence() {
   if (!state.filtered.length) return null;
   const person = state.filtered[state.nextIndex % state.filtered.length];
@@ -900,6 +910,7 @@ function replaceOne(direction = 1) {
 
   replaceNode(enterSlot, nextPerson);
   updatePathProgress();
+  return nextPerson;
 }
 
 function replaceNode(slotIndex, person) {
@@ -942,13 +953,15 @@ function autoHighlightVisible() {
 }
 
 function nextStep() {
-  replaceOne(1);
-  window.setTimeout(autoHighlightVisible, AUTO_HIGHLIGHT_AFTER_CHANGE_MS);
+  clearFocusMode(true);
+  const person = replaceOne(1);
+  if (person) scheduleFocusAfterFade(person);
 }
 
 function prevStep() {
-  replaceOne(-1);
-  window.setTimeout(autoHighlightVisible, AUTO_HIGHLIGHT_AFTER_CHANGE_MS);
+  clearFocusMode(true);
+  const person = replaceOne(-1);
+  if (person) scheduleFocusAfterFade(person);
 }
 
 
@@ -1388,8 +1401,10 @@ function startTimer() {
 function stopTimer() {
   clearTimeout(state.timer);
   clearTimeout(state.startDelayTimer);
+  clearTimeout(state.pendingFocusTimer);
   state.timer = null;
   state.startDelayTimer = null;
+  state.pendingFocusTimer = null;
 }
 
 async function loadData() {
