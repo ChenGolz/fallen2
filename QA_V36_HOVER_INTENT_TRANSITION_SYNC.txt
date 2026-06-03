@@ -1,0 +1,10 @@
+V36 hover intent / transition polish:
+- Implemented 120ms hover intent delay for mouse/pen hover.
+- Fast cursor movement across portraits no longer triggers rapid focus-mode strobing.
+- Pointer leave cancels hover intent before focus is applied.
+- Timeline entry/exit transitions remain slow and soft.
+- Focus/hover transitions are now separate and snappier.
+- Added awaitTransition utility with fallback and replaced raw setTimeout fade waits in showPage, clearSlotNode and replaceNode.
+- Kept V35 search fixes, popup design, description QA and click reliability.
+- JS syntax checked with node -c app.js.
+- No images folder included.

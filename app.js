@@ -43,6 +43,8 @@ const state = {
   startDelayTimer: null,
   pendingFocusTimer: null,
   hoverResumeTimer: null,
+  hoverIntentTimer: null,
+  hoverIntentPersonId: null,
   openPersonId: null,
   focusPersonId: null,
   focusRelatedIds: new Set(),
@@ -88,6 +90,33 @@ function el(tag, attrs = {}, ...children) {
   });
 
   return node;
+}
+
+
+function awaitTransition(node, property = "opacity", fallbackMs = 900, callback = () => {}) {
+  if (!node) {
+    callback();
+    return;
+  }
+
+  let finished = false;
+
+  const done = () => {
+    if (finished) return;
+    finished = true;
+    node.removeEventListener("transitionend", handler);
+    callback();
+  };
+
+  const handler = (event) => {
+    if (event.target === node && event.propertyName === property) {
+      done();
+    }
+  };
+
+  node.addEventListener("transitionend", handler);
+
+  window.setTimeout(done, fallbackMs);
 }
 
 function debounce(fn, delay = 250) {
@@ -785,6 +814,9 @@ function searchHaystack(person) {
 }
 
 function applySearch(query) {
+  clearTimeout(state.hoverIntentTimer);
+  state.hoverIntentTimer = null;
+  state.hoverIntentPersonId = null;
   clearFocusMode(true);
   state.isPointerHovering = false;
   state.isOpeningStory = false;
@@ -922,7 +954,7 @@ function showPage(pageIndex, options = {}) {
   };
 
   if (oldNodes.length && !options.instant) {
-    window.setTimeout(renderNext, 520);
+    awaitTransition(oldNodes[0], "opacity", 900, renderNext);
   } else {
     renderNext();
   }
@@ -1030,9 +1062,17 @@ function handlePersonHover(person) {
   focusPerson(person, false, "hover");
 }
 
-function handlePersonLeave() {
+function handlePersonLeave(person = null) {
+  clearTimeout(state.hoverIntentTimer);
+  state.hoverIntentTimer = null;
+  state.hoverIntentPersonId = null;
+
+  // If the pointer only passed over quickly, do nothing. This prevents dim/highlight strobing.
+  if (person && !state.isPointerHovering && state.focusPersonId !== person.id) return;
+
   state.isPointerHovering = false;
   if (state.openPersonId || state.focusLocked) return;
+
   clearFocusMode();
   resumeRotationAfterInteraction(1050);
 }
@@ -1089,21 +1129,36 @@ function renderPersonNode(person, index) {
     type: "button",
     "aria-label": `פתיחת הסיפור של ${formatDisplayName(person.name)}`,
     onPointerEnter: (event) => {
-      if (event.pointerType === "mouse" || event.pointerType === "pen") handlePersonHover(person);
+      if (event.pointerType === "mouse" || event.pointerType === "pen") {
+        clearTimeout(state.hoverIntentTimer);
+        state.hoverIntentPersonId = person.id;
+        state.hoverIntentTimer = window.setTimeout(() => {
+          if (state.hoverIntentPersonId === person.id && !state.openPersonId && !state.isOpeningStory) {
+            handlePersonHover(person);
+          }
+        }, 120);
+      }
     },
     onPointerLeave: (event) => {
-      if (event.pointerType === "mouse" || event.pointerType === "pen") handlePersonLeave();
+      if (event.pointerType === "mouse" || event.pointerType === "pen") {
+        clearTimeout(state.hoverIntentTimer);
+        state.hoverIntentTimer = null;
+        handlePersonLeave(person);
+      }
     },
     onFocus: () => {
+      clearTimeout(state.hoverIntentTimer);
       pauseRotationForInteraction();
       focusPerson(person, false, "keyboard");
     },
     onBlur: () => {
+      clearTimeout(state.hoverIntentTimer);
       if (state.openPersonId || state.focusLocked || state.isOpeningStory) return;
       clearFocusMode();
       resumeRotationAfterInteraction(1050);
     },
     onPointerDown: () => {
+      clearTimeout(state.hoverIntentTimer);
       button.classList.add("is-pressed");
     },
     onPointerUp: () => {
@@ -1210,10 +1265,10 @@ function clearSlotNode(slotIndex) {
   if (!oldNode) return;
 
   oldNode.classList.add("is-leaving");
-  setTimeout(() => {
+  awaitTransition(oldNode, "opacity", 900, () => {
     if (oldNode.isConnected) oldNode.remove();
     updateFocusClasses();
-  }, 950);
+  });
 }
 
 function replaceNode(slotIndex, person) {
@@ -1232,13 +1287,13 @@ function replaceNode(slotIndex, person) {
 
   oldNode.classList.add("is-leaving");
 
-  setTimeout(() => {
+  awaitTransition(oldNode, "opacity", 900, () => {
     if (oldNode.isConnected) oldNode.replaceWith(newNode);
     requestAnimationFrame(() => {
       newNode.classList.add("is-visible");
       updateFocusClasses();
     });
-  }, 520);
+  });
 }
 
 function autoHighlightVisible() {
@@ -1737,12 +1792,15 @@ function stopTimer() {
   clearTimeout(state.startDelayTimer);
   clearTimeout(state.pendingFocusTimer);
   clearTimeout(state.hoverResumeTimer);
+  clearTimeout(state.hoverIntentTimer);
   clearTimeout(state.clickGuardTimer);
   clearTimeout(state.captureClickTimer);
   state.timer = null;
   state.startDelayTimer = null;
   state.pendingFocusTimer = null;
   state.hoverResumeTimer = null;
+  state.hoverIntentTimer = null;
+  state.hoverIntentPersonId = null;
   state.clickGuardTimer = null;
   state.captureClickTimer = null;
 }

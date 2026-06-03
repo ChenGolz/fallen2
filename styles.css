@@ -6240,3 +6240,60 @@ body {
     padding: .82rem .88rem !important;
   }
 }
+
+
+/* ==========================================================
+   V36 interaction polish: hover intent + transition sync
+   ========================================================== */
+
+/* Slow, organic entrance/exit for the timeline itself. */
+.person-node {
+  transition:
+    opacity 0.8s ease,
+    transform 0.9s cubic-bezier(0.2, 0.9, 0.25, 1),
+    filter 0.8s ease !important;
+  will-change: opacity, transform, filter !important;
+}
+
+/* Snappy response once focus/hover mode is active, separate from entry/exit fade timing. */
+.memory-stage.is-focus-mode .person-node {
+  transition:
+    opacity 0.3s ease,
+    transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    filter 0.3s ease !important;
+}
+
+/* Faster internal hover details. */
+.portrait-frame,
+.person-name,
+.portrait-frame img {
+  transition:
+    transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    filter 0.3s ease,
+    opacity 0.3s ease,
+    box-shadow 0.3s ease !important;
+}
+
+/* Leaving nodes should still fade gently, not use the snappy focus-mode timing. */
+.person-node.is-leaving {
+  transition:
+    opacity 0.72s ease,
+    transform 0.78s cubic-bezier(.55,.055,.675,.19),
+    filter 0.72s ease !important;
+}
+
+/* Hover focus remains responsive without a strobe effect because JS now waits for hover intent. */
+.memory-stage.is-focus-mode .person-node.is-dimmed {
+  transition:
+    opacity 0.28s ease,
+    transform 0.34s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    filter 0.28s ease !important;
+}
+
+.memory-stage.is-focus-mode .person-node.is-focused,
+.memory-stage.is-focus-mode .person-node.is-related {
+  transition:
+    opacity 0.28s ease,
+    transform 0.34s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    filter 0.28s ease !important;
+}
