@@ -5628,3 +5628,172 @@ body {
     padding: .68rem .75rem !important;
   }
 }
+
+
+/* ==========================================================
+   V31 click reliability + story/card contrast fixes
+   ========================================================== */
+
+/* Make image/name click feel immediate and prevent accidental text/image drag. */
+.person-button,
+.portrait-frame,
+.portrait-frame img,
+.person-name {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+
+.person-button {
+  touch-action: manipulation !important;
+}
+
+.person-button.is-pressed .portrait-frame {
+  transform: scale(.985) !important;
+}
+
+/* Keep the story popup readable in both designs, even after previous dark/light overrides. */
+.story-panel {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(255, 230, 164, .18), transparent 17rem),
+    linear-gradient(180deg, rgba(255, 252, 244, .985), rgba(242, 235, 220, .985)) !important;
+  color: #20170f !important;
+  border-color: rgba(150, 111, 45, .30) !important;
+}
+
+.story-panel,
+.story-panel p,
+.story-panel span,
+.story-panel strong,
+.story-panel h2,
+.story-panel h3,
+.story-panel li {
+  text-shadow: none !important;
+}
+
+.story-copy h2,
+#story-title {
+  color: #16100b !important;
+}
+
+.story-meta span,
+.story-actions button {
+  background: rgba(111, 78, 31, .10) !important;
+  color: #4e3415 !important;
+  border-color: rgba(111, 78, 31, .18) !important;
+}
+
+.story-description {
+  margin-top: .25rem !important;
+}
+
+.story-description p {
+  color: #241a10 !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.72), rgba(255,250,239,.58)) !important;
+  border: 1px solid rgba(132, 94, 35, .14) !important;
+  border-radius: 1rem !important;
+  padding: .92rem 1rem !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.70), 0 8px 20px rgba(64, 42, 16, .055) !important;
+}
+
+.story-description p:first-child {
+  color: #1b130c !important;
+  font-weight: 760 !important;
+}
+
+/* Family / first-degree relatives section: previous version used pale text that could disappear. */
+.relatives-card,
+.relatives-card-grid {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(196, 143, 49, .12), transparent 15rem),
+    linear-gradient(180deg, rgba(255,255,255,.78), rgba(252,247,236,.68)) !important;
+  border: 1px solid rgba(130, 90, 30, .16) !important;
+  color: #241a10 !important;
+}
+
+.relatives-card-header p {
+  color: #51422f !important;
+}
+
+.relatives-card-kicker,
+.relative-label {
+  color: #6d4b1f !important;
+  background: rgba(188, 135, 45, .12) !important;
+  border-color: rgba(188, 135, 45, .18) !important;
+}
+
+.relative-pill {
+  background: rgba(255,255,255,.66) !important;
+  border: 1px solid rgba(128, 88, 30, .14) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.70) !important;
+}
+
+.relative-value {
+  color: #21170e !important;
+}
+
+.relatives-sentence,
+.relatives-segment-text,
+.detail span,
+.family-group-copy,
+.family-group-copy p,
+.family-group-members,
+.candle-print-quote,
+.candle-label-lines,
+.candle-label-lines strong,
+.candle-label-lines em {
+  color: #241a10 !important;
+}
+
+.detail,
+.candle-print-card,
+.family-group-card {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.76), rgba(250,244,232,.62)) !important;
+  color: #241a10 !important;
+  border-color: rgba(128, 88, 30, .15) !important;
+}
+
+.detail strong,
+.family-group-copy h3,
+.family-group-kicker,
+.candle-print-kicker {
+  color: #4e3415 !important;
+}
+
+.candle-print-button {
+  color: #241a10 !important;
+  background: linear-gradient(180deg, rgba(255,255,255,.94), rgba(236,223,196,.84)) !important;
+  border-color: rgba(128, 88, 30, .20) !important;
+}
+
+/* Focus mode still clear, but not so dark that names become unreadable. */
+.memory-stage.is-focus-mode .person-node.is-dimmed {
+  opacity: .46 !important;
+  filter: blur(.9px) saturate(.72) brightness(.68) !important;
+}
+
+.memory-stage.is-focus-mode .person-node.is-focused,
+.memory-stage.is-focus-mode .person-node.is-related {
+  opacity: 1 !important;
+  filter: blur(0) saturate(1.04) brightness(1.04) drop-shadow(0 0 24px rgba(255, 219, 139, .20)) !important;
+}
+
+/* Mobile popup readability */
+@media (max-width: 760px) {
+  .story-panel {
+    color: #20170f !important;
+  }
+
+  .story-description p {
+    font-size: .94rem !important;
+    line-height: 1.68 !important;
+    padding: .82rem .88rem !important;
+  }
+
+  .relative-pill,
+  .candle-print-card,
+  .detail {
+    background: rgba(255,255,255,.74) !important;
+  }
+}

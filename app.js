@@ -48,6 +48,8 @@ const state = {
   lastInteractionAt: 0,
   query: "",
   isPointerHovering: false,
+  isOpeningStory: false,
+  clickGuardTimer: null,
 };
 
 const els = {
@@ -700,6 +702,7 @@ function searchHaystack(person) {
 function applySearch(query) {
   clearFocusMode(true);
   state.isPointerHovering = false;
+  state.isOpeningStory = false;
   state.query = cleanOrderText(query);
 
   const tokens = state.query.split(/\s+/u).filter(Boolean);
@@ -798,12 +801,30 @@ function handlePersonLeave() {
   resumeRotationAfterInteraction(1050);
 }
 
-function handlePersonPress(person) {
+function handlePersonPress(person, event = null) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
   if (!person) return;
-  pauseRotationForInteraction();
+  if (state.openPersonId === person.id || state.isOpeningStory) return;
+
+  state.isOpeningStory = true;
   state.isPointerHovering = false;
+  clearTimeout(state.clickGuardTimer);
+  pauseRotationForInteraction();
+
+  // Lock focus before opening so pointerleave/blur cannot clear the selected card.
   focusPerson(person, true, "press");
-  window.setTimeout(() => openStory(person), 140);
+
+  // Open immediately. This prevents a scheduled carousel tick from replacing the card
+  // between pointerdown and click, which was the reason some image clicks only changed images.
+  openStory(person);
+
+  state.clickGuardTimer = window.setTimeout(() => {
+    state.isOpeningStory = false;
+  }, 900);
 }
 
 function renderPersonNode(person, index) {
@@ -843,12 +864,14 @@ function renderPersonNode(person, index) {
       focusPerson(person, false, "keyboard");
     },
     onBlur: () => {
-      if (state.openPersonId || state.focusLocked) return;
+      if (state.openPersonId || state.focusLocked || state.isOpeningStory) return;
       clearFocusMode();
       resumeRotationAfterInteraction(1050);
     },
-    onPointerDown: () => {
+    onPointerDown: (event) => {
+      if (event.button !== undefined && event.button !== 0) return;
       button.classList.add("is-pressed");
+      handlePersonPress(person, event);
     },
     onPointerUp: () => {
       button.classList.remove("is-pressed");
@@ -856,7 +879,10 @@ function renderPersonNode(person, index) {
     onPointerCancel: () => {
       button.classList.remove("is-pressed");
     },
-    onClick: () => handlePersonPress(person),
+    onClick: (event) => {
+      // Keyboard activation fallback. Pointer clicks are already handled on pointerdown.
+      if (!state.openPersonId && !state.isOpeningStory) handlePersonPress(person, event);
+    },
   });
 
   button.append(
@@ -941,6 +967,7 @@ function fadeOutSlot(slotIndex) {
 }
 
 function replaceOne(direction = 1) {
+  if (state.openPersonId || state.isOpeningStory || state.focusLocked || state.isPointerHovering) return;
   if (!state.filtered.length || state.visible.length <= 1) return;
 
   if (direction < 0 && state.history.length) {
@@ -1013,13 +1040,14 @@ function autoHighlightVisible() {
 }
 
 function nextStep() {
+  if (state.openPersonId || state.isOpeningStory || state.focusLocked || state.isPointerHovering) return;
   replaceOne(1);
 }
 
 function prevStep() {
+  if (state.openPersonId || state.isOpeningStory || state.focusLocked || state.isPointerHovering) return;
   replaceOne(-1);
 }
-
 
 function relativesLines(person) {
   if (Array.isArray(person.relativesLines)) {
@@ -1370,6 +1398,7 @@ function storyDetails(person) {
 function openStory(person) {
   if (!person) return;
 
+  state.isOpeningStory = true;
   pauseRotationForInteraction();
   state.openPersonId = person.id;
   focusPerson(person, true, "open");
@@ -1380,10 +1409,15 @@ function openStory(person) {
 
   renderStory(person);
   announce(`${formatDisplayName(person.name)}. ${person.storySummary || "סיפור אישי נפתח."}`);
+
+  window.setTimeout(() => {
+    state.isOpeningStory = false;
+  }, 300);
 }
 
 function closeStory() {
   state.openPersonId = null;
+  state.isOpeningStory = false;
   els.storyRoot.replaceChildren();
   clearFocusMode(true);
 
@@ -1467,7 +1501,7 @@ function syncStoryFromQuery() {
 
 function startTimer() {
   stopTimer();
-  if (!state.paused && !state.openPersonId && !state.focusLocked && !state.isPointerHovering) {
+  if (!state.paused && !state.openPersonId && !state.isOpeningStory && !state.focusLocked && !state.isPointerHovering) {
     state.timer = setInterval(nextStep, ROTATE_MS);
   }
 }
@@ -1477,10 +1511,12 @@ function stopTimer() {
   clearTimeout(state.startDelayTimer);
   clearTimeout(state.pendingFocusTimer);
   clearTimeout(state.hoverResumeTimer);
+  clearTimeout(state.clickGuardTimer);
   state.timer = null;
   state.startDelayTimer = null;
   state.pendingFocusTimer = null;
   state.hoverResumeTimer = null;
+  state.clickGuardTimer = null;
 }
 
 async function loadData() {

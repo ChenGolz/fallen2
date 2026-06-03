@@ -1,0 +1,8 @@
+V31 click/card contrast fixes:
+- Built on V30, keeping latest descriptions/family/card content.
+- Clicking/tapping a portrait now opens the story on pointerdown, before a carousel tick can replace the card.
+- Rotation is blocked while a click, hover, locked focus, or story popup is active.
+- openStory stops the carousel immediately and guards against double-open races.
+- Added stronger story-card contrast so description, family, details, and candle text remain readable.
+- Changed only index.html, styles.css, and app.js.
+- No images folder included.
