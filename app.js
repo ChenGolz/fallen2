@@ -2,7 +2,7 @@
 
 const PAGE_SIZE = 8;
 const ROTATE_MS = 18000;
-const AUTO_HIGHLIGHT_AFTER_CHANGE_MS = 6500;
+const AUTO_HIGHLIGHT_AFTER_CHANGE_MS = 8500;
 const CANDLE_KEY = "memorial-final-candles-v1";
 
 const PHOTO_OVERRIDES = {};
@@ -743,15 +743,23 @@ function renderAllVisible(options = {}) {
     node.dataset.slotIndex = String(index);
     els.layer.append(node);
 
-    const delay = options.initial ? index * 100 : 120 + index * 110;
+    // Initial page load: the line starts empty, then each portrait fades in slowly.
+    // Ophir appears first, Omer second, and the rest follow in order.
+    const delay = options.initial ? 850 + index * 1550 : 250 + index * 180;
     requestAnimationFrame(() => {
-      setTimeout(() => node.classList.add("is-visible"), delay);
+      window.setTimeout(() => node.classList.add("is-visible"), delay);
     });
   });
 
   updatePathProgress();
   updateFocusClasses();
-  if (!options.skipAutoFocus) window.setTimeout(autoHighlightVisible, options.initial ? 6500 : 5200);
+
+  // Wait until the initial sequence finishes before automatic highlight begins.
+  const focusDelay = options.initial
+    ? 850 + state.visible.length * 1550 + 1800
+    : 7200;
+
+  if (!options.skipAutoFocus) window.setTimeout(autoHighlightVisible, focusDelay);
   syncStoryFromQuery();
 }
 
@@ -852,41 +860,45 @@ function replaceOne(direction = 1) {
 }
 
 function replaceNode(slotIndex, person) {
-  const oldNode = els.layer.querySelector(`.person-node[data-slot-index="${slotIndex}"]`);
+  const oldNode = els.layer.querySelector(`.person-node[data-slot-index="${slotIndex}"]:not(.is-leaving)`);
   const newNode = renderPersonNode(person, slotIndex);
   newNode.dataset.slotIndex = String(slotIndex);
+  newNode.classList.add("is-entering");
 
   if (!oldNode) {
     els.layer.append(newNode);
     requestAnimationFrame(() => {
       window.setTimeout(() => {
         newNode.classList.add("is-visible");
+        newNode.classList.remove("is-entering");
         updateFocusClasses();
-      }, 140);
+      }, 220);
     });
     return;
   }
 
+  // Crossfade: the old portrait fades out while the new portrait fades in.
   oldNode.classList.add("is-leaving");
+  els.layer.append(newNode);
 
-  // Let the old portrait fade out slowly before replacing it.
+  requestAnimationFrame(() => {
+    window.setTimeout(() => {
+      newNode.classList.add("is-visible");
+      newNode.classList.remove("is-entering");
+      updateFocusClasses();
+    }, 260);
+  });
+
   window.setTimeout(() => {
-    if (oldNode.isConnected) oldNode.replaceWith(newNode);
-
-    // Small pause before the new portrait fades in, so the change feels calm rather than abrupt.
-    requestAnimationFrame(() => {
-      window.setTimeout(() => {
-        newNode.classList.add("is-visible");
-        updateFocusClasses();
-      }, 180);
-    });
-  }, 2350);
+    if (oldNode.isConnected) oldNode.remove();
+    updateFocusClasses();
+  }, 2600);
 }
 
 function autoHighlightVisible() {
   if (!state.visible.length || state.openPersonId || state.focusLocked) return;
-  if (els.layer?.querySelector(".person-node.is-leaving")) return;
-  if (Date.now() - state.lastInteractionAt < 7000) return;
+  if (els.layer?.querySelector(".person-node.is-leaving, .person-node.is-entering")) return;
+  if (Date.now() - state.lastInteractionAt < 8500) return;
 
   const candidates = state.visible.filter(Boolean);
   if (!candidates.length) return;

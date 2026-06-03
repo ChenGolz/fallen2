@@ -1,0 +1,7 @@
+V18 sequential crossfade:
+- On page load the line starts visually empty.
+- Cards fade in one by one in data order: Ophir first, Omer second, then the rest.
+- Rotation remains 18 seconds.
+- When a slot changes, old and new cards crossfade in the same slot.
+- Auto-highlight waits longer and does not run during entering/leaving transitions.
+- No images folder included.

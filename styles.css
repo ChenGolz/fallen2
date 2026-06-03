@@ -4997,3 +4997,74 @@ body {
     transition-duration: 1.95s !important;
   }
 }
+
+
+/* ==========================================================
+   V18 sequential empty-line reveal + smooth crossfade
+   ========================================================== */
+
+/* Enter from true invisible state; no snapping. */
+.person-node {
+  opacity: 0 !important;
+  transform: translateY(.65rem) scale(.965) !important;
+  filter: blur(7px) drop-shadow(0 18px 30px rgba(0,0,0,.42)) !important;
+  transition:
+    opacity 2.25s cubic-bezier(.22,.8,.24,1),
+    transform 2.25s cubic-bezier(.22,.8,.24,1),
+    filter 2.25s cubic-bezier(.22,.8,.24,1) !important;
+}
+
+.person-node.is-visible {
+  opacity: 1 !important;
+  transform: translateY(0) scale(1) !important;
+  filter: blur(0) drop-shadow(0 18px 30px rgba(0,0,0,.42)) !important;
+}
+
+.person-node.is-entering {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.person-node.is-leaving {
+  opacity: 0 !important;
+  transform: translateY(-.25rem) scale(.975) !important;
+  filter: blur(8px) drop-shadow(0 18px 30px rgba(0,0,0,.42)) !important;
+  pointer-events: none !important;
+  z-index: 18 !important;
+}
+
+.person-node.is-entering.is-visible {
+  pointer-events: auto !important;
+}
+
+/* The new node sits in the same slot while the old one fades out. */
+.person-node.is-entering,
+.person-node.is-leaving {
+  position: absolute !important;
+}
+
+.portrait-frame img,
+.portrait-placeholder,
+.person-name {
+  transition:
+    opacity 2.2s cubic-bezier(.22,.8,.24,1),
+    filter 2.2s cubic-bezier(.22,.8,.24,1),
+    transform 2.2s cubic-bezier(.22,.8,.24,1) !important;
+}
+
+.person-node.is-leaving .portrait-frame img,
+.person-node.is-leaving .portrait-placeholder,
+.person-node.is-leaving .person-name {
+  opacity: 0 !important;
+  filter: blur(3px) grayscale(.55) !important;
+}
+
+/* Mobile: still soft, but a bit quicker so it does not feel stuck. */
+@media (max-width: 900px) and (orientation: portrait) {
+  .person-node,
+  .portrait-frame img,
+  .portrait-placeholder,
+  .person-name {
+    transition-duration: 1.95s !important;
+  }
+}
