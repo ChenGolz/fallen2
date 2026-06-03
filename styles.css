@@ -6297,3 +6297,53 @@ body {
     transform 0.34s cubic-bezier(0.25, 0.46, 0.45, 0.94),
     filter 0.28s ease !important;
 }
+
+
+/* ==========================================================
+   V37 bulletproof transition + ghost fix + punchier hover
+   ========================================================== */
+
+/* Base is faster so un-hover no longer drags for nearly a second. */
+.person-node {
+  transition:
+    opacity 0.5s ease,
+    transform 0.55s cubic-bezier(0.2, 0.9, 0.25, 1),
+    filter 0.5s ease !important;
+  will-change: opacity, transform, filter !important;
+}
+
+/* Slow majestic fade is now reserved only for real timeline entry. */
+.person-node.is-entering {
+  transition:
+    opacity 0.8s ease,
+    transform 0.9s cubic-bezier(0.2, 0.9, 0.25, 1),
+    filter 0.8s ease !important;
+}
+
+/* Focus/hover stays snappy. */
+.memory-stage.is-focus-mode .person-node {
+  transition:
+    opacity 0.28s ease,
+    transform 0.34s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    filter 0.28s ease !important;
+}
+
+/* Leaving matches the 800ms awaitTransition fallback; no invisible ghost cards. */
+.person-node.is-leaving {
+  pointer-events: none !important;
+  transition:
+    opacity 0.72s ease,
+    transform 0.76s cubic-bezier(.55,.055,.675,.19),
+    filter 0.72s ease !important;
+}
+
+/* Internal hover details stay crisp and responsive. */
+.portrait-frame,
+.person-name,
+.portrait-frame img {
+  transition:
+    transform 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    filter 0.28s ease,
+    opacity 0.28s ease,
+    box-shadow 0.28s ease !important;
+}

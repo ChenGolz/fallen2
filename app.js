@@ -93,18 +93,20 @@ function el(tag, attrs = {}, ...children) {
 }
 
 
-function awaitTransition(node, property = "opacity", fallbackMs = 900, callback = () => {}) {
+function awaitTransition(node, property = "opacity", fallbackMs = 800, callback = () => {}) {
   if (!node) {
     callback();
     return;
   }
 
   let finished = false;
+  let fallbackTimer = null;
 
   const done = () => {
     if (finished) return;
     finished = true;
     node.removeEventListener("transitionend", handler);
+    clearTimeout(fallbackTimer);
     callback();
   };
 
@@ -116,7 +118,8 @@ function awaitTransition(node, property = "opacity", fallbackMs = 900, callback 
 
   node.addEventListener("transitionend", handler);
 
-  window.setTimeout(done, fallbackMs);
+  // Fallback is slightly longer than the .72s leaving transition.
+  fallbackTimer = window.setTimeout(done, fallbackMs);
 }
 
 function debounce(fn, delay = 250) {
@@ -954,7 +957,7 @@ function showPage(pageIndex, options = {}) {
   };
 
   if (oldNodes.length && !options.instant) {
-    awaitTransition(oldNodes[0], "opacity", 900, renderNext);
+    awaitTransition(oldNodes[0], "opacity", 800, renderNext);
   } else {
     renderNext();
   }
@@ -988,6 +991,15 @@ function showEmptyState() {
   );
 }
 
+function markNodeEntering(node) {
+  if (!node) return;
+
+  node.classList.add("is-entering");
+  awaitTransition(node, "opacity", 950, () => {
+    if (node.isConnected) node.classList.remove("is-entering");
+  });
+}
+
 function renderAllVisible(options = {}) {
   els.layer.replaceChildren();
 
@@ -1001,11 +1013,15 @@ function renderAllVisible(options = {}) {
 
     const node = renderPersonNode(person, index);
     node.dataset.slotIndex = String(index);
+    node.classList.add("is-entering");
     els.layer.append(node);
 
     const delay = options.initial ? index * 75 : 90 + index * 45;
     requestAnimationFrame(() => {
-      setTimeout(() => node.classList.add("is-visible"), delay);
+      setTimeout(() => {
+        node.classList.add("is-visible");
+        markNodeEntering(node);
+      }, delay);
     });
   });
 
@@ -1136,7 +1152,7 @@ function renderPersonNode(person, index) {
           if (state.hoverIntentPersonId === person.id && !state.openPersonId && !state.isOpeningStory) {
             handlePersonHover(person);
           }
-        }, 120);
+        }, 85);
       }
     },
     onPointerLeave: (event) => {
@@ -1250,10 +1266,11 @@ function fadeOutSlot(slotIndex) {
   if (!oldNode) return;
 
   oldNode.classList.add("is-leaving");
-  window.setTimeout(() => {
+
+  awaitTransition(oldNode, "opacity", 800, () => {
     if (oldNode.isConnected) oldNode.remove();
     updateFocusClasses();
-  }, 2400);
+  });
 }
 
 function replaceOne(direction = 1) {
@@ -1265,7 +1282,7 @@ function clearSlotNode(slotIndex) {
   if (!oldNode) return;
 
   oldNode.classList.add("is-leaving");
-  awaitTransition(oldNode, "opacity", 900, () => {
+  awaitTransition(oldNode, "opacity", 800, () => {
     if (oldNode.isConnected) oldNode.remove();
     updateFocusClasses();
   });
@@ -1279,18 +1296,24 @@ function replaceNode(slotIndex, person) {
   newNode.dataset.slotIndex = String(slotIndex);
 
   if (!oldNode) {
+    newNode.classList.add("is-entering");
     els.layer.append(newNode);
-    requestAnimationFrame(() => newNode.classList.add("is-visible"));
+    requestAnimationFrame(() => {
+      newNode.classList.add("is-visible");
+      markNodeEntering(newNode);
+    });
     updateFocusClasses();
     return;
   }
 
   oldNode.classList.add("is-leaving");
 
-  awaitTransition(oldNode, "opacity", 900, () => {
+  awaitTransition(oldNode, "opacity", 800, () => {
+    newNode.classList.add("is-entering");
     if (oldNode.isConnected) oldNode.replaceWith(newNode);
     requestAnimationFrame(() => {
       newNode.classList.add("is-visible");
+      markNodeEntering(newNode);
       updateFocusClasses();
     });
   });

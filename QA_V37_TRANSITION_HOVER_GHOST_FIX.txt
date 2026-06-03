@@ -1,0 +1,11 @@
+V37 transition / hover / ghost-card fixes:
+- awaitTransition now clears its fallback timer when transitionend succeeds, preventing double callbacks.
+- fadeOutSlot no longer uses the old 2400ms hardcoded timeout; it now waits for opacity transition with an 800ms fallback.
+- showPage, clearSlotNode and replaceNode use the tighter 800ms transition fallback.
+- Hover intent changed from 120ms to 85ms for a more immediate feel while still preventing strobe on fast sweeps.
+- Base un-hover transition is now 0.5s so brightness returns faster.
+- Slow 0.8s / 0.9s fade is reserved for actual timeline entry via .is-entering.
+- Leaving nodes have pointer-events disabled and match the transition fallback timing.
+- Kept V36/V35 search, popup readability, description QA and click reliability.
+- JS syntax checked with node -c app.js.
+- No images folder included.
