@@ -39,6 +39,7 @@ const state = {
   timer: null,
   startDelayTimer: null,
   pendingFocusTimer: null,
+  hoverResumeTimer: null,
   openPersonId: null,
   focusPersonId: null,
   focusRelatedIds: new Set(),
@@ -46,6 +47,7 @@ const state = {
   autoFocusIndex: 0,
   lastInteractionAt: 0,
   query: "",
+  isPointerHovering: false,
 };
 
 const els = {
@@ -602,8 +604,9 @@ function focusPerson(person, locked = false, source = "manual") {
 
   state.focusPersonId = person.id;
   state.focusRelatedIds = relatedIdsFor(person);
-  state.focusLocked = locked;
+  state.focusLocked = Boolean(locked);
 
+  // Hover, keyboard focus and click should all keep directly-related family members visible.
   if (source !== "auto" && ensureFamilyVisible(person)) {
     updateFocusClasses();
     return;
@@ -613,7 +616,7 @@ function focusPerson(person, locked = false, source = "manual") {
 }
 
 function clearFocusMode(force = false) {
-  if (state.openPersonId && !force) return;
+  if (!force && (state.openPersonId || state.focusLocked)) return;
 
   state.focusPersonId = null;
   state.focusRelatedIds = new Set();
@@ -696,6 +699,7 @@ function searchHaystack(person) {
 
 function applySearch(query) {
   clearFocusMode(true);
+  state.isPointerHovering = false;
   state.query = cleanOrderText(query);
 
   const tokens = state.query.split(/\s+/u).filter(Boolean);
@@ -703,13 +707,15 @@ function applySearch(query) {
   const source = !tokens.length
     ? [...state.people]
     : state.people.filter((person) => {
-        const haystack = searchHaystack(person);
-        return tokens.every((token) => haystack.includes(token));
-      });
+      const haystack = searchHaystack(person);
+      return tokens.every((token) => haystack.includes(token));
+    });
 
-  state.filtered = source.sort(sortPeople);
+  state.filtered = source;
   initializeVisible();
   renderAllVisible({ initial: true });
+
+  stopTimer();
   startTimer();
 }
 
@@ -760,6 +766,46 @@ function renderAllVisible(options = {}) {
   syncStoryFromQuery();
 }
 
+function pauseRotationForInteraction() {
+  clearTimeout(state.hoverResumeTimer);
+  state.hoverResumeTimer = null;
+  stopTimer();
+}
+
+function resumeRotationAfterInteraction(delay = 900) {
+  clearTimeout(state.hoverResumeTimer);
+  if (state.paused || state.openPersonId || state.focusLocked || state.isPointerHovering) return;
+
+  state.hoverResumeTimer = window.setTimeout(() => {
+    state.hoverResumeTimer = null;
+    if (!state.paused && !state.openPersonId && !state.focusLocked && !state.isPointerHovering) {
+      startTimer();
+    }
+  }, delay);
+}
+
+function handlePersonHover(person) {
+  if (!person || state.openPersonId) return;
+  state.isPointerHovering = true;
+  pauseRotationForInteraction();
+  focusPerson(person, false, "hover");
+}
+
+function handlePersonLeave() {
+  state.isPointerHovering = false;
+  if (state.openPersonId || state.focusLocked) return;
+  clearFocusMode();
+  resumeRotationAfterInteraction(1050);
+}
+
+function handlePersonPress(person) {
+  if (!person) return;
+  pauseRotationForInteraction();
+  state.isPointerHovering = false;
+  focusPerson(person, true, "press");
+  window.setTimeout(() => openStory(person), 140);
+}
+
 function renderPersonNode(person, index) {
   const point = points()[index % points().length];
   const isTop = point.side === "top";
@@ -786,16 +832,31 @@ function renderPersonNode(person, index) {
     class: "person-button",
     type: "button",
     "aria-label": `פתיחת הסיפור של ${formatDisplayName(person.name)}`,
-    onPointerEnter: () => focusPerson(person),
-    onPointerLeave: () => clearFocusMode(),
-    onFocus: () => focusPerson(person),
-    onBlur: () => clearFocusMode(),
-    onClick: () => {
-      focusPerson(person, true);
-
-      // Let the dim-and-illuminate moment register before the story opens.
-      window.setTimeout(() => openStory(person), 260);
+    onPointerEnter: (event) => {
+      if (event.pointerType === "mouse" || event.pointerType === "pen") handlePersonHover(person);
     },
+    onPointerLeave: (event) => {
+      if (event.pointerType === "mouse" || event.pointerType === "pen") handlePersonLeave();
+    },
+    onFocus: () => {
+      pauseRotationForInteraction();
+      focusPerson(person, false, "keyboard");
+    },
+    onBlur: () => {
+      if (state.openPersonId || state.focusLocked) return;
+      clearFocusMode();
+      resumeRotationAfterInteraction(1050);
+    },
+    onPointerDown: () => {
+      button.classList.add("is-pressed");
+    },
+    onPointerUp: () => {
+      button.classList.remove("is-pressed");
+    },
+    onPointerCancel: () => {
+      button.classList.remove("is-pressed");
+    },
+    onClick: () => handlePersonPress(person),
   });
 
   button.append(
@@ -1285,8 +1346,11 @@ function storyDetails(person) {
 }
 
 function openStory(person) {
-  focusPerson(person, true);
+  if (!person) return;
+
+  pauseRotationForInteraction();
   state.openPersonId = person.id;
+  focusPerson(person, true, "open");
 
   const url = new URL(window.location.href);
   url.searchParams.set("id", person.id);
@@ -1304,6 +1368,8 @@ function closeStory() {
   const url = new URL(window.location.href);
   url.searchParams.delete("id");
   updateUrlSafely(url, {});
+
+  resumeRotationAfterInteraction(900);
 }
 
 function renderStory(person) {
@@ -1379,7 +1445,7 @@ function syncStoryFromQuery() {
 
 function startTimer() {
   stopTimer();
-  if (!state.paused) {
+  if (!state.paused && !state.openPersonId && !state.focusLocked && !state.isPointerHovering) {
     state.timer = setInterval(nextStep, ROTATE_MS);
   }
 }
@@ -1388,9 +1454,11 @@ function stopTimer() {
   clearInterval(state.timer);
   clearTimeout(state.startDelayTimer);
   clearTimeout(state.pendingFocusTimer);
+  clearTimeout(state.hoverResumeTimer);
   state.timer = null;
   state.startDelayTimer = null;
   state.pendingFocusTimer = null;
+  state.hoverResumeTimer = null;
 }
 
 async function loadData() {

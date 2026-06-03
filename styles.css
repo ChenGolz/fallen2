@@ -5412,3 +5412,87 @@ body {
       filter .72s ease !important;
   }
 }
+
+
+/* ==========================================================
+   V29 hover / press polish:
+   - Hover pauses rotation and highlights the person + close family.
+   - Click/tap locks the focus and opens the story cleanly.
+   - Pointer leave / blur no longer clears a clicked card.
+   ========================================================== */
+
+.person-button {
+  -webkit-tap-highlight-color: transparent !important;
+  touch-action: manipulation !important;
+}
+
+.person-button:hover .portrait-frame,
+.person-button:focus-visible .portrait-frame,
+.person-button.is-pressed .portrait-frame {
+  transform: translateY(-.18rem) scale(1.035) !important;
+}
+
+.person-button:hover .person-name,
+.person-button:focus-visible .person-name,
+.person-button.is-pressed .person-name {
+  transform: translateY(-.08rem) !important;
+}
+
+.person-button:focus-visible {
+  outline: none !important;
+}
+
+.person-button:focus-visible .portrait-frame {
+  outline: 2px solid rgba(255,255,255,.72) !important;
+  outline-offset: .28rem !important;
+}
+
+.memory-stage.is-focus-mode .person-node.is-focused {
+  z-index: 80 !important;
+  opacity: 1 !important;
+  filter: blur(0) saturate(1.08) brightness(1.04) drop-shadow(0 0 28px rgba(255, 225, 145, .24)) !important;
+}
+
+.memory-stage.is-focus-mode .person-node.is-related {
+  z-index: 74 !important;
+  opacity: .96 !important;
+  filter: blur(0) saturate(1.04) brightness(1.02) drop-shadow(0 0 22px rgba(255, 225, 145, .16)) !important;
+}
+
+.memory-stage.is-focus-mode .person-node.is-dimmed {
+  opacity: .34 !important;
+  filter: blur(1.4px) saturate(.58) brightness(.58) !important;
+}
+
+.memory-stage.is-focus-locked .person-node.is-focused .portrait-frame,
+.memory-stage.is-focus-locked .person-node.is-related .portrait-frame {
+  animation: locked-focus-pulse 2.8s ease-in-out infinite !important;
+}
+
+@keyframes locked-focus-pulse {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.11); }
+}
+
+@media (hover: none) {
+  .person-button:hover .portrait-frame,
+  .person-button:hover .person-name {
+    transform: none !important;
+  }
+
+  .person-button.is-pressed .portrait-frame {
+    transform: scale(.985) !important;
+  }
+}
+
+@media (max-width: 900px) and (orientation: portrait) {
+  .memory-stage.is-focus-mode .person-node.is-dimmed {
+    opacity: .42 !important;
+    filter: blur(.8px) saturate(.68) brightness(.68) !important;
+  }
+
+  .memory-stage.is-focus-mode .person-node.is-focused,
+  .memory-stage.is-focus-mode .person-node.is-related {
+    opacity: 1 !important;
+  }
+}

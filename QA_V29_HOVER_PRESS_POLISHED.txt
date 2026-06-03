@@ -1,0 +1,9 @@
+V29 hover/press behavior polish:
+- Hovering a person pauses rotation and highlights that person plus direct family members.
+- Moving the mouse away clears hover focus and resumes rotation after a short delay.
+- Keyboard focus behaves like hover and is accessible via Tab.
+- Clicking/tapping locks focus first, then opens the story card cleanly.
+- Pointerleave/blur can no longer clear a clicked/locked person before the story opens.
+- Carousel stays paused while story modal is open and resumes after close if not manually paused.
+- Added visible focus ring and pressed/tap feedback.
+- No images folder included.
