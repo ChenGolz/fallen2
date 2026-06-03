@@ -1,8 +1,9 @@
 "use strict";
 
 const PAGE_SIZE = 8;
-const ROTATE_MS = 18000;
-const AUTO_HIGHLIGHT_AFTER_CHANGE_MS = 8500;
+const ROTATE_MS = 7000;
+const ACTIVE_LIFESPAN_STEPS = 2;
+const AUTO_HIGHLIGHT_AFTER_CHANGE_MS = 4500;
 const CANDLE_KEY = "memorial-final-candles-v1";
 
 const PHOTO_OVERRIDES = {};
@@ -37,6 +38,7 @@ const state = {
   history: [],
   paused: false,
   timer: null,
+  startDelayTimer: null,
   openPersonId: null,
   focusPersonId: null,
   focusRelatedIds: new Set(),
@@ -535,7 +537,7 @@ function relatedIdsFor(person) {
 }
 
 function visibleSignature(list) {
-  return list.map((person) => person.id).join("|");
+  return (list || []).filter(Boolean).map((person) => person.id).join("|");
 }
 
 function buildFamilyVisible(person) {
@@ -548,11 +550,12 @@ function buildFamilyVisible(person) {
   if (cluster.length <= 1) return null;
 
   const fill = [
-    ...state.visible,
+    ...state.visible.filter(Boolean),
     ...state.filtered
   ].filter((item, index, arr) =>
+    item &&
     !clusterIds.has(item.id) &&
-    arr.findIndex((other) => other.id === item.id) === index
+    arr.findIndex((other) => other && other.id === item.id) === index
   );
 
   return [...cluster, ...fill].slice(0, limit);
@@ -567,7 +570,8 @@ function ensureFamilyVisible(person) {
   if (currentSignature === nextSignature) return false;
 
   state.visible = nextVisible;
-  state.visibleIds = new Set(state.visible.map((item) => item.id));
+  state.visibleIds = new Set(state.visible.filter(Boolean).map((item) => item.id));
+  state.slotCursor = state.visible.filter(Boolean).length;
   renderAllVisible({ initial: false, skipAutoFocus: true });
   return true;
 }
@@ -711,9 +715,12 @@ function applySearch(query) {
 
 function initializeVisible() {
   const count = visibleCount();
-  state.visible = state.filtered.slice(0, count);
-  state.visibleIds = new Set(state.visible.map((person) => person.id));
-  state.nextIndex = state.visible.length % (state.filtered.length || 1);
+
+  // Start with an empty line. The timer will stream people in:
+  // Ophir first, Omer second, then Aviv while Ophir fades out, and so on.
+  state.visible = Array.from({ length: count }, () => null);
+  state.visibleIds = new Set();
+  state.nextIndex = 0;
   state.slotCursor = 0;
   state.autoFocusIndex = 0;
   state.history = [];
@@ -733,19 +740,19 @@ function showEmptyState() {
 function renderAllVisible(options = {}) {
   els.layer.replaceChildren();
 
-  if (!state.visible.length) {
+  if (!state.filtered.length) {
     showEmptyState();
     return;
   }
 
   state.visible.forEach((person, index) => {
+    if (!person) return;
+
     const node = renderPersonNode(person, index);
     node.dataset.slotIndex = String(index);
     els.layer.append(node);
 
-    // Initial page load: the line starts empty, then each portrait fades in slowly.
-    // Ophir appears first, Omer second, and the rest follow in order.
-    const delay = options.initial ? 850 + index * 1550 : 250 + index * 180;
+    const delay = options.initial ? 0 : 180 + index * 70;
     requestAnimationFrame(() => {
       window.setTimeout(() => node.classList.add("is-visible"), delay);
     });
@@ -754,12 +761,10 @@ function renderAllVisible(options = {}) {
   updatePathProgress();
   updateFocusClasses();
 
-  // Wait until the initial sequence finishes before automatic highlight begins.
-  const focusDelay = options.initial
-    ? 850 + state.visible.length * 1550 + 1800
-    : 7200;
+  if (!options.skipAutoFocus && state.visible.some(Boolean)) {
+    window.setTimeout(autoHighlightVisible, 5200);
+  }
 
-  if (!options.skipAutoFocus) window.setTimeout(autoHighlightVisible, focusDelay);
   syncStoryFromQuery();
 }
 
@@ -823,39 +828,77 @@ function nextPersonForSequence() {
   return person;
 }
 
-function replaceOne(direction = 1) {
-  if (!state.filtered.length || state.visible.length <= 1) return;
+function nextAvailablePersonForSequence() {
+  if (!state.filtered.length) return null;
 
-  if (direction < 0 && state.history.length) {
-    const last = state.history.pop();
-    state.visible[last.slotIndex] = last.previousPerson;
-    state.visibleIds.delete(last.nextPerson.id);
-    state.visibleIds.add(last.previousPerson.id);
-    state.slotCursor = last.slotIndex;
-    replaceNode(last.slotIndex, last.previousPerson);
-    updatePathProgress();
-    return;
-  }
-
-  const slotIndex = state.slotCursor % state.visible.length;
-  const previousPerson = state.visible[slotIndex];
-  let nextPerson = nextPersonForSequence();
   let guard = 0;
-
-  while (nextPerson && state.visibleIds.has(nextPerson.id) && guard < state.filtered.length) {
-    nextPerson = nextPersonForSequence();
+  while (guard < state.filtered.length) {
+    const person = nextPersonForSequence();
+    if (person && !state.visibleIds.has(person.id)) return person;
     guard += 1;
   }
 
+  return null;
+}
+
+function fadeOutSlot(slotIndex) {
+  const person = state.visible[slotIndex];
+  if (person) {
+    state.visibleIds.delete(person.id);
+    state.visible[slotIndex] = null;
+  }
+
+  const oldNode = els.layer.querySelector(`.person-node[data-slot-index="${slotIndex}"]:not(.is-leaving)`);
+  if (!oldNode) return;
+
+  oldNode.classList.add("is-leaving");
+  window.setTimeout(() => {
+    if (oldNode.isConnected) oldNode.remove();
+    updateFocusClasses();
+  }, 2400);
+}
+
+function replaceOne(direction = 1) {
+  if (!state.filtered.length) return;
+
+  const count = visibleCount();
+  if (!Array.isArray(state.visible) || state.visible.length !== count) {
+    state.visible = Array.from({ length: count }, () => null);
+    state.visibleIds = new Set();
+    state.slotCursor = 0;
+  }
+
+  // Previous button restarts the calm stream one step earlier.
+  if (direction < 0) {
+    state.nextIndex = (state.nextIndex - 2 + state.filtered.length) % state.filtered.length;
+  }
+
+  const nextPerson = nextAvailablePersonForSequence();
   if (!nextPerson) return;
 
-  state.visible[slotIndex] = nextPerson;
-  state.visibleIds.delete(previousPerson.id);
-  state.visibleIds.add(nextPerson.id);
-  state.history.push({ slotIndex, previousPerson, nextPerson });
-  state.slotCursor = (state.slotCursor + 1) % state.visible.length;
+  const step = state.slotCursor;
+  const enterSlot = step % count;
+  const exitSlot = step >= ACTIVE_LIFESPAN_STEPS
+    ? (step - ACTIVE_LIFESPAN_STEPS) % count
+    : -1;
 
-  replaceNode(slotIndex, nextPerson);
+  const exitingPerson = exitSlot >= 0 ? state.visible[exitSlot] : null;
+
+  // When the third person appears, the first fades out; when the fourth appears,
+  // the second fades out, so every person gets the same time on screen.
+  if (exitSlot >= 0 && exitSlot !== enterSlot) {
+    fadeOutSlot(exitSlot);
+  }
+
+  const previousPerson = state.visible[enterSlot] || null;
+  if (previousPerson) state.visibleIds.delete(previousPerson.id);
+
+  state.visible[enterSlot] = nextPerson;
+  state.visibleIds.add(nextPerson.id);
+  state.history.push({ slotIndex: enterSlot, previousPerson, nextPerson, exitSlot, exitingPerson });
+  state.slotCursor += 1;
+
+  replaceNode(enterSlot, nextPerson);
   updatePathProgress();
 }
 
@@ -865,20 +908,8 @@ function replaceNode(slotIndex, person) {
   newNode.dataset.slotIndex = String(slotIndex);
   newNode.classList.add("is-entering");
 
-  if (!oldNode) {
-    els.layer.append(newNode);
-    requestAnimationFrame(() => {
-      window.setTimeout(() => {
-        newNode.classList.add("is-visible");
-        newNode.classList.remove("is-entering");
-        updateFocusClasses();
-      }, 220);
-    });
-    return;
-  }
+  if (oldNode) oldNode.classList.add("is-leaving");
 
-  // Crossfade: the old portrait fades out while the new portrait fades in.
-  oldNode.classList.add("is-leaving");
   els.layer.append(newNode);
 
   requestAnimationFrame(() => {
@@ -886,19 +917,21 @@ function replaceNode(slotIndex, person) {
       newNode.classList.add("is-visible");
       newNode.classList.remove("is-entering");
       updateFocusClasses();
-    }, 260);
+    }, 160);
   });
 
-  window.setTimeout(() => {
-    if (oldNode.isConnected) oldNode.remove();
-    updateFocusClasses();
-  }, 2600);
+  if (oldNode) {
+    window.setTimeout(() => {
+      if (oldNode.isConnected) oldNode.remove();
+      updateFocusClasses();
+    }, 2400);
+  }
 }
 
 function autoHighlightVisible() {
-  if (!state.visible.length || state.openPersonId || state.focusLocked) return;
+  if (!state.visible.some(Boolean) || state.openPersonId || state.focusLocked) return;
   if (els.layer?.querySelector(".person-node.is-leaving, .person-node.is-entering")) return;
-  if (Date.now() - state.lastInteractionAt < 8500) return;
+  if (Date.now() - state.lastInteractionAt < 7000) return;
 
   const candidates = state.visible.filter(Boolean);
   if (!candidates.length) return;
@@ -1338,14 +1371,25 @@ function syncStoryFromQuery() {
 
 function startTimer() {
   stopTimer();
-  if (!state.paused) {
-    state.timer = setInterval(nextStep, ROTATE_MS);
-  }
+
+  if (state.paused) return;
+
+  const hasVisible = state.visible.some(Boolean);
+  const firstDelay = hasVisible ? ROTATE_MS : 850;
+
+  state.timer = window.setTimeout(function tick() {
+    nextStep();
+    if (!state.paused) {
+      state.timer = window.setTimeout(tick, ROTATE_MS);
+    }
+  }, firstDelay);
 }
 
 function stopTimer() {
-  clearInterval(state.timer);
+  clearTimeout(state.timer);
+  clearTimeout(state.startDelayTimer);
   state.timer = null;
+  state.startDelayTimer = null;
 }
 
 async function loadData() {

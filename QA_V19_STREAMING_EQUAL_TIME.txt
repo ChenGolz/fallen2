@@ -1,0 +1,9 @@
+V19 streaming equal-time behavior:
+- On open, the line is empty for a short moment.
+- Ophir fades in first.
+- Omer fades in second.
+- On the third step, Aviv fades in while Ophir fades out.
+- On the fourth step, Livnat fades in while Omer fades out.
+- Each person remains visible for two ticks, so everyone receives the same screen time.
+- Timing uses a timeout loop, not setInterval, so the first delay does not shorten Ophir's time.
+- No images folder included.
