@@ -50,6 +50,8 @@ const state = {
   isPointerHovering: false,
   isOpeningStory: false,
   clickGuardTimer: null,
+  captureClickTimer: null,
+  interactionGuardUntil: 0,
 };
 
 const els = {
@@ -703,6 +705,7 @@ function applySearch(query) {
   clearFocusMode(true);
   state.isPointerHovering = false;
   state.isOpeningStory = false;
+  state.interactionGuardUntil = 0;
   state.query = cleanOrderText(query);
 
   const tokens = state.query.split(/\s+/u).filter(Boolean);
@@ -724,9 +727,9 @@ function applySearch(query) {
 
 function initializeVisible() {
   const count = visibleCount();
-  state.visible = state.filtered.slice(0, count);
-  state.visibleIds = new Set(state.visible.map((person) => person.id));
-  state.nextIndex = state.visible.length % (state.filtered.length || 1);
+  state.visible = Array.from({ length: count }, () => null);
+  state.visibleIds = new Set();
+  state.nextIndex = 0;
   state.slotCursor = 0;
   state.autoFocusIndex = 0;
   state.history = [];
@@ -746,7 +749,7 @@ function showEmptyState() {
 function renderAllVisible(options = {}) {
   els.layer.replaceChildren();
 
-  if (!state.visible.length) {
+  if (!state.filtered.length) {
     showEmptyState();
     return;
   }
@@ -758,7 +761,7 @@ function renderAllVisible(options = {}) {
     node.dataset.slotIndex = String(index);
     els.layer.append(node);
 
-    const delay = options.initial ? index * 100 : 120 + index * 110;
+    const delay = options.initial ? 0 : 120 + index * 70;
     requestAnimationFrame(() => {
       setTimeout(() => node.classList.add("is-visible"), delay);
     });
@@ -767,6 +770,30 @@ function renderAllVisible(options = {}) {
   updatePathProgress();
   updateFocusClasses();
   syncStoryFromQuery();
+}
+
+function personFromPointerEvent(event) {
+  const node = event.target?.closest?.(".person-node");
+  if (!node || !els.layer.contains(node)) return null;
+
+  const id = node.dataset.personId;
+  if (!id) return null;
+
+  return state.people.find((person) => person.id === id) || null;
+}
+
+function openPersonFromPointer(event) {
+  if (event.button !== undefined && event.button !== 0) return;
+
+  const person = personFromPointerEvent(event);
+  if (!person) return;
+
+  event.preventDefault();
+  event.stopPropagation();
+
+  // Guard against a carousel tick during the press/click window.
+  state.interactionGuardUntil = Date.now() + 1800;
+  handlePersonPress(person, event);
 }
 
 function pauseRotationForInteraction() {
@@ -812,14 +839,12 @@ function handlePersonPress(person, event = null) {
 
   state.isOpeningStory = true;
   state.isPointerHovering = false;
+  state.interactionGuardUntil = Date.now() + 1800;
   clearTimeout(state.clickGuardTimer);
+  clearTimeout(state.captureClickTimer);
   pauseRotationForInteraction();
 
-  // Lock focus before opening so pointerleave/blur cannot clear the selected card.
-  focusPerson(person, true, "press");
-
-  // Open immediately. This prevents a scheduled carousel tick from replacing the card
-  // between pointerdown and click, which was the reason some image clicks only changed images.
+  // Open the story immediately for the exact person attached to the clicked node.
   openStory(person);
 
   state.clickGuardTimer = window.setTimeout(() => {
@@ -868,10 +893,8 @@ function renderPersonNode(person, index) {
       clearFocusMode();
       resumeRotationAfterInteraction(1050);
     },
-    onPointerDown: (event) => {
-      if (event.button !== undefined && event.button !== 0) return;
+    onPointerDown: () => {
       button.classList.add("is-pressed");
-      handlePersonPress(person, event);
     },
     onPointerUp: () => {
       button.classList.remove("is-pressed");
@@ -880,7 +903,7 @@ function renderPersonNode(person, index) {
       button.classList.remove("is-pressed");
     },
     onClick: (event) => {
-      // Keyboard activation fallback. Pointer clicks are already handled on pointerdown.
+      // Keyboard activation fallback. Pointer activation is handled by the layer capture handler.
       if (!state.openPersonId && !state.isOpeningStory) handlePersonPress(person, event);
     },
   });
@@ -968,43 +991,68 @@ function fadeOutSlot(slotIndex) {
 
 function replaceOne(direction = 1) {
   if (state.openPersonId || state.isOpeningStory || state.focusLocked || state.isPointerHovering) return;
-  if (!state.filtered.length || state.visible.length <= 1) return;
+  if (Date.now() < state.interactionGuardUntil) return;
+  if (!state.filtered.length) return;
+
+  const count = visibleCount();
+  if (!Array.isArray(state.visible) || state.visible.length !== count) {
+    state.visible = Array.from({ length: count }, () => null);
+    state.visibleIds = new Set();
+    state.slotCursor = 0;
+  }
 
   if (direction < 0 && state.history.length) {
     const last = state.history.pop();
-    state.visible[last.slotIndex] = last.previousPerson;
-    state.visibleIds.delete(last.nextPerson.id);
-    state.visibleIds.add(last.previousPerson.id);
-    state.slotCursor = last.slotIndex;
-    replaceNode(last.slotIndex, last.previousPerson);
+    const current = state.visible[last.slotIndex];
+
+    if (current) state.visibleIds.delete(current.id);
+    if (last.previousPerson) state.visibleIds.add(last.previousPerson.id);
+
+    state.visible[last.slotIndex] = last.previousPerson || null;
+    state.slotCursor = Math.max(0, state.slotCursor - 1);
+
+    if (last.previousPerson) replaceNode(last.slotIndex, last.previousPerson);
+    else clearSlotNode(last.slotIndex);
+
     updatePathProgress();
     return;
   }
 
-  const slotIndex = state.slotCursor % state.visible.length;
-  const previousPerson = state.visible[slotIndex];
-  let nextPerson = nextPersonForSequence();
-  let guard = 0;
-
-  while (nextPerson && state.visibleIds.has(nextPerson.id) && guard < state.filtered.length) {
-    nextPerson = nextPersonForSequence();
-    guard += 1;
-  }
-
+  const nextPerson = nextAvailablePersonForSequence();
   if (!nextPerson) return;
 
-  state.visible[slotIndex] = nextPerson;
+  const slotIndex = state.slotCursor % count;
+  const previousPerson = state.visible[slotIndex] || null;
+
   if (previousPerson) state.visibleIds.delete(previousPerson.id);
+  state.visible[slotIndex] = nextPerson;
   state.visibleIds.add(nextPerson.id);
   state.history.push({ slotIndex, previousPerson, nextPerson });
-  state.slotCursor = (state.slotCursor + 1) % state.visible.length;
+  state.slotCursor += 1;
 
+  // The same slot is used when the old person completes the full visible cycle.
   replaceNode(slotIndex, nextPerson);
   updatePathProgress();
 }
 
+function clearSlotNode(slotIndex) {
+  const oldNode = els.layer.querySelector(`.person-node[data-slot-index="${slotIndex}"]:not(.is-leaving)`);
+  if (!oldNode) return;
+
+  oldNode.classList.add("is-leaving");
+  setTimeout(() => {
+    if (oldNode.isConnected) oldNode.remove();
+    updateFocusClasses();
+  }, 950);
+}
+
 function replaceNode(slotIndex, person) {
-  const oldNode = els.layer.querySelector(`.person-node[data-slot-index="${slotIndex}"]`);
+  if (!person) {
+    clearSlotNode(slotIndex);
+    return;
+  }
+
+  const oldNode = els.layer.querySelector(`.person-node[data-slot-index="${slotIndex}"]:not(.is-leaving)`);
   const newNode = renderPersonNode(person, slotIndex);
   newNode.dataset.slotIndex = String(slotIndex);
 
@@ -1023,7 +1071,7 @@ function replaceNode(slotIndex, person) {
       newNode.classList.add("is-visible");
       updateFocusClasses();
     });
-  }, 1050);
+  }, 850);
 }
 
 function autoHighlightVisible() {
@@ -1040,12 +1088,10 @@ function autoHighlightVisible() {
 }
 
 function nextStep() {
-  if (state.openPersonId || state.isOpeningStory || state.focusLocked || state.isPointerHovering) return;
   replaceOne(1);
 }
 
 function prevStep() {
-  if (state.openPersonId || state.isOpeningStory || state.focusLocked || state.isPointerHovering) return;
   replaceOne(-1);
 }
 
@@ -1399,6 +1445,7 @@ function openStory(person) {
   if (!person) return;
 
   state.isOpeningStory = true;
+  state.interactionGuardUntil = Date.now() + 1800;
   pauseRotationForInteraction();
   state.openPersonId = person.id;
   focusPerson(person, true, "open");
@@ -1418,6 +1465,7 @@ function openStory(person) {
 function closeStory() {
   state.openPersonId = null;
   state.isOpeningStory = false;
+  state.interactionGuardUntil = Date.now() + 500;
   els.storyRoot.replaceChildren();
   clearFocusMode(true);
 
@@ -1501,22 +1549,35 @@ function syncStoryFromQuery() {
 
 function startTimer() {
   stopTimer();
-  if (!state.paused && !state.openPersonId && !state.isOpeningStory && !state.focusLocked && !state.isPointerHovering) {
-    state.timer = setInterval(nextStep, ROTATE_MS);
-  }
+
+  if (state.paused || state.openPersonId || state.isOpeningStory || state.focusLocked || state.isPointerHovering) return;
+
+  const firstDelay = state.visible.some(Boolean) ? ROTATE_MS : 650;
+
+  state.timer = window.setTimeout(function tick() {
+    if (!state.paused && !state.openPersonId && !state.isOpeningStory && !state.focusLocked && !state.isPointerHovering) {
+      replaceOne(1);
+    }
+
+    if (!state.paused && !state.openPersonId && !state.isOpeningStory && !state.focusLocked && !state.isPointerHovering) {
+      state.timer = window.setTimeout(tick, ROTATE_MS);
+    }
+  }, firstDelay);
 }
 
 function stopTimer() {
-  clearInterval(state.timer);
+  clearTimeout(state.timer);
   clearTimeout(state.startDelayTimer);
   clearTimeout(state.pendingFocusTimer);
   clearTimeout(state.hoverResumeTimer);
   clearTimeout(state.clickGuardTimer);
+  clearTimeout(state.captureClickTimer);
   state.timer = null;
   state.startDelayTimer = null;
   state.pendingFocusTimer = null;
   state.hoverResumeTimer = null;
   state.clickGuardTimer = null;
+  state.captureClickTimer = null;
 }
 
 async function loadData() {
@@ -1534,17 +1595,22 @@ async function loadData() {
 }
 
 function initEvents() {
+  // Capture pointerdown before the carousel can advance. This opens the exact card the user pressed.
+  els.layer.addEventListener("pointerdown", openPersonFromPointer, true);
+
   els.search.addEventListener("input", debounce((event) => {
     applySearch(event.target.value);
   }, 250));
 
   els.next.addEventListener("click", () => {
-    nextStep();
+    if (state.openPersonId || state.isOpeningStory) return;
+    replaceOne(1);
     startTimer();
   });
 
   els.prev.addEventListener("click", () => {
-    prevStep();
+    if (state.openPersonId || state.isOpeningStory) return;
+    replaceOne(-1);
     startTimer();
   });
 
@@ -1562,12 +1628,13 @@ function initEvents() {
   window.addEventListener("resize", debounce(() => {
     initializeVisible();
     renderAllVisible({ initial: true });
+    startTimer();
   }, 180));
 
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && state.openPersonId) closeStory();
-    if (event.key === "ArrowLeft" && !state.openPersonId) nextStep();
-    if (event.key === "ArrowRight" && !state.openPersonId) prevStep();
+    if (event.key === "ArrowLeft" && !state.openPersonId) replaceOne(1);
+    if (event.key === "ArrowRight" && !state.openPersonId) replaceOne(-1);
   });
 
   window.addEventListener("popstate", syncStoryFromQuery);

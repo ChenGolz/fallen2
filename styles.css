@@ -5797,3 +5797,143 @@ body {
     background: rgba(255,255,255,.74) !important;
   }
 }
+
+
+/* ==========================================================
+   V32 equal-time carousel + click reliability
+   ========================================================== */
+
+/* During opening/pressing, never let the visual fade state swallow the click target. */
+.person-node {
+  pointer-events: auto !important;
+}
+
+.person-node.is-leaving {
+  pointer-events: none !important;
+}
+
+.person-button,
+.portrait-frame,
+.portrait-frame img,
+.person-name {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -webkit-touch-callout: none !important;
+}
+
+.person-button {
+  touch-action: manipulation !important;
+  cursor: pointer !important;
+}
+
+.person-button.is-pressed .portrait-frame {
+  transform: scale(.985) !important;
+}
+
+/* Slightly tighter transitions so replacement finishes before the next equal-time tick. */
+.person-node {
+  transition:
+    opacity .72s ease,
+    transform .86s cubic-bezier(.2,.9,.25,1),
+    filter .72s ease !important;
+}
+
+.person-node.is-leaving {
+  transition:
+    opacity .72s ease,
+    transform .78s cubic-bezier(.55,.055,.675,.19),
+    filter .72s ease !important;
+}
+
+/* Keep story text and all family/candle text readable over both themes. */
+.story-panel {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(255, 230, 164, .20), transparent 17rem),
+    linear-gradient(180deg, rgba(255, 252, 244, .99), rgba(242, 235, 220, .99)) !important;
+  color: #20170f !important;
+}
+
+.story-copy h2,
+#story-title,
+.story-panel h3,
+.story-panel strong {
+  color: #16100b !important;
+}
+
+.story-meta span,
+.story-actions button {
+  color: #4b3214 !important;
+  background: rgba(111, 78, 31, .10) !important;
+  border-color: rgba(111, 78, 31, .18) !important;
+}
+
+.story-description p {
+  color: #241a10 !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.78), rgba(255,250,239,.64)) !important;
+  border: 1px solid rgba(132, 94, 35, .14) !important;
+  border-radius: 1rem !important;
+  padding: .92rem 1rem !important;
+  text-shadow: none !important;
+}
+
+.story-description p:first-child {
+  color: #17100a !important;
+  font-weight: 760 !important;
+}
+
+.relatives-card,
+.relatives-card-grid,
+.detail,
+.candle-print-card,
+.family-group-card {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.80), rgba(250,244,232,.68)) !important;
+  color: #241a10 !important;
+  border-color: rgba(128, 88, 30, .16) !important;
+  text-shadow: none !important;
+}
+
+.relatives-card *,
+.relatives-card-grid *,
+.detail *,
+.candle-print-card *,
+.family-group-card * {
+  text-shadow: none !important;
+}
+
+.relatives-card-header p,
+.relatives-sentence,
+.relative-value,
+.detail span,
+.family-group-copy,
+.family-group-copy p,
+.family-group-members,
+.candle-print-quote,
+.candle-label-lines,
+.candle-label-lines strong,
+.candle-label-lines em {
+  color: #241a10 !important;
+}
+
+.relatives-card-kicker,
+.relative-label,
+.detail strong,
+.family-group-copy h3,
+.family-group-kicker,
+.candle-print-kicker {
+  color: #5c3d17 !important;
+}
+
+.relative-pill {
+  background: rgba(255,255,255,.70) !important;
+  border: 1px solid rgba(128, 88, 30, .14) !important;
+}
+
+@media (max-width: 760px) {
+  .story-description p {
+    font-size: .94rem !important;
+    line-height: 1.68 !important;
+    padding: .82rem .88rem !important;
+  }
+}

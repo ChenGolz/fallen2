@@ -1,0 +1,8 @@
+V32 fixes:
+- Carousel now uses an equal-time stream: empty line, one person enters each tick, and every person exits after the same number of ticks.
+- The first people no longer get extra screen time compared with later people.
+- Clicking/tapping is handled at capture phase on pointerdown, so the exact visible person opens before the carousel can change the image.
+- Rotation is blocked during click/hover/story interactions and uses a timeout loop instead of setInterval to avoid timing races.
+- Text contrast overrides remain for description, family, details, and candle sections.
+- Changed files: index.html, styles.css, app.js.
+- No images folder included.
