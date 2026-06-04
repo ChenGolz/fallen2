@@ -1,0 +1,7 @@
+V40 bigger web images:
+- Enlarged timeline portrait medallions and name plaques on web/desktop only.
+- Large desktop uses larger clamp values; laptop desktop uses safer-but-larger values.
+- Mobile is intentionally unchanged.
+- Kept V39 popup redesign, V38 longer descriptions, and latest search/click/hover fixes.
+- Changed files: index.html and styles.css only.
+- No images folder included.

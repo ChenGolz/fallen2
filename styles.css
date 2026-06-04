@@ -6961,3 +6961,82 @@ body {
     line-height: 1.62 !important;
   }
 }
+
+
+/* ==========================================================
+   V40: bigger WEB / desktop portraits only
+   ========================================================== */
+
+/* Large desktop: make the portrait medallions clearly larger. */
+@media (min-width: 1201px) {
+  .timeline-layer .person-node {
+    width: clamp(10.2rem, 9.2vw, 12.4rem) !important;
+  }
+
+  .timeline-layer .portrait-frame {
+    width: clamp(8.35rem, 7.35vw, 9.9rem) !important;
+    padding: .40rem !important;
+  }
+
+  .timeline-layer .portrait-frame::before {
+    inset: .55rem !important;
+  }
+
+  .timeline-layer .person-name {
+    max-width: clamp(8.8rem, 9.2vw, 10.7rem) !important;
+    padding: .50rem .78rem .46rem !important;
+    font-size: clamp(.86rem, .95vw, 1.08rem) !important;
+    line-height: 1.08 !important;
+    border-radius: .78rem !important;
+  }
+}
+
+/* Laptop / smaller desktop: bigger than before, but safer against overlap. */
+@media (min-width: 901px) and (max-width: 1200px) {
+  .timeline-layer .person-node {
+    width: clamp(8.9rem, 10.3vw, 10.5rem) !important;
+  }
+
+  .timeline-layer .portrait-frame {
+    width: clamp(7.25rem, 8.1vw, 8.4rem) !important;
+    padding: .36rem !important;
+  }
+
+  .timeline-layer .portrait-frame::before {
+    inset: .50rem !important;
+  }
+
+  .timeline-layer .person-name {
+    max-width: clamp(7.8rem, 9vw, 9.2rem) !important;
+    padding: .46rem .70rem .42rem !important;
+    font-size: clamp(.78rem, .95vw, .98rem) !important;
+    line-height: 1.08 !important;
+  }
+}
+
+/* Give the enlarged desktop nodes a bit more visual priority above the woven line. */
+@media (min-width: 901px) {
+  .timeline-layer .person-node {
+    z-index: 35 !important;
+  }
+
+  .timeline-layer .person-node.is-bottom {
+    z-index: 34 !important;
+  }
+
+  .timeline-layer .person-node.is-focused,
+  .timeline-layer .person-node.is-related {
+    z-index: 60 !important;
+  }
+}
+
+/* Mobile remains intentionally unchanged. */
+@media (max-width: 900px) {
+  .timeline-layer .person-node {
+    width: var(--node-w) !important;
+  }
+
+  .timeline-layer .portrait-frame {
+    width: var(--photo-w) !important;
+  }
+}
