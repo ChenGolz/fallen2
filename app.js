@@ -3,7 +3,6 @@
 const PAGE_SIZE = 8;
 const ROTATE_MS = 6400;
 const AUTO_HIGHLIGHT_AFTER_CHANGE_MS = 2800;
-const SLOT_ROTATION_SETTLE_MS = 980;
 const CANDLE_KEY = "memorial-final-candles-v1";
 
 const PHOTO_OVERRIDES = {};
@@ -656,9 +655,13 @@ function focusPerson(person, locked = false, source = "manual") {
   state.focusRelatedIds = relatedIdsFor(person);
   state.focusLocked = Boolean(locked);
 
-  // Never rearrange cards from hover/focus. Changing the DOM while the
-  // pointer is over a portrait can make the next press land on a different
-  // person. Related people are highlighted only when they are already visible.
+  // Only hover/keyboard should rearrange the visible line to show family.
+  // Press/open must keep the clicked card stable and open the popup immediately.
+  if ((source === "hover" || source === "keyboard") && ensureFamilyVisible(person)) {
+    updateFocusClasses();
+    return;
+  }
+
   updateFocusClasses();
 }
 
@@ -950,9 +953,7 @@ function showPage(pageIndex, options = {}) {
   const renderNext = () => {
     setVisibleFromPage(nextPage);
     renderAllVisible({ initial: false });
-    window.setTimeout(() => {
-      state.isTransitioning = false;
-    }, SLOT_ROTATION_SETTLE_MS);
+    state.isTransitioning = false;
   };
 
   if (oldNodes.length && !options.instant) {
@@ -972,8 +973,7 @@ function initializeVisible() {
   state.pages = buildVisiblePages();
   state.pageIndex = 0;
   setVisibleFromPage(currentPage());
-  const firstHiddenIndex = state.filtered.findIndex((person) => !state.visibleIds.has(person.id));
-  state.nextIndex = firstHiddenIndex >= 0 ? firstHiddenIndex : 0;
+  state.nextIndex = 0;
   state.slotCursor = 0;
   state.autoFocusIndex = 0;
   state.history = [];
@@ -1032,14 +1032,7 @@ function renderAllVisible(options = {}) {
 
 function personFromPointerEvent(event) {
   const node = event.target?.closest?.(".person-node");
-  if (
-    !node ||
-    !els.layer.contains(node) ||
-    node.classList.contains("is-leaving") ||
-    node.classList.contains("is-entering")
-  ) {
-    return null;
-  }
+  if (!node || !els.layer.contains(node) || node.classList.contains("is-leaving")) return null;
 
   const id = node.dataset.personId;
   if (!id) return null;
@@ -1222,19 +1215,10 @@ function scheduleFocusAfterFade(person) {
   }, 1200);
 }
 
-function nextPersonForSequence(direction = 1) {
+function nextPersonForSequence() {
   if (!state.filtered.length) return null;
-
-  const length = state.filtered.length;
-  state.nextIndex = (state.nextIndex + length) % length;
-
-  if (direction < 0) {
-    state.nextIndex = (state.nextIndex - 1 + length) % length;
-    return state.filtered[state.nextIndex];
-  }
-
-  const person = state.filtered[state.nextIndex];
-  state.nextIndex = (state.nextIndex + 1) % length;
+  const person = state.filtered[state.nextIndex % state.filtered.length];
+  state.nextIndex = (state.nextIndex + 1) % state.filtered.length;
   return person;
 }
 
@@ -1258,12 +1242,12 @@ function removeAfterTransition(node, fallbackMs = 950) {
   window.setTimeout(cleanup, fallbackMs);
 }
 
-function nextAvailablePersonForSequence(direction = 1) {
+function nextAvailablePersonForSequence() {
   if (!state.filtered.length) return null;
 
   let guard = 0;
   while (guard < state.filtered.length) {
-    const person = nextPersonForSequence(direction);
+    const person = nextPersonForSequence();
     if (person && !state.visibleIds.has(person.id)) return person;
     guard += 1;
   }
@@ -1271,7 +1255,7 @@ function nextAvailablePersonForSequence(direction = 1) {
   return null;
 }
 
-function fadeOutSlot(slotIndex, callback = () => {}) {
+function fadeOutSlot(slotIndex) {
   const person = state.visible[slotIndex];
   if (person) {
     state.visibleIds.delete(person.id);
@@ -1279,70 +1263,18 @@ function fadeOutSlot(slotIndex, callback = () => {}) {
   }
 
   const oldNode = els.layer.querySelector(`.person-node[data-slot-index="${slotIndex}"]:not(.is-leaving)`);
-  if (!oldNode) {
-    callback();
-    return;
-  }
+  if (!oldNode) return;
 
   oldNode.classList.add("is-leaving");
 
   awaitTransition(oldNode, "opacity", 800, () => {
     if (oldNode.isConnected) oldNode.remove();
     updateFocusClasses();
-    callback();
   });
-}
-
-function slotIndexForRotation(direction = 1) {
-  const occupiedSlots = state.visible
-    .map((person, index) => person ? index : -1)
-    .filter((index) => index >= 0);
-
-  if (!occupiedSlots.length) return -1;
-
-  const cursor = (state.slotCursor + occupiedSlots.length) % occupiedSlots.length;
-  const slotIndex = occupiedSlots[cursor];
-  state.slotCursor = (cursor + (direction < 0 ? -1 : 1) + occupiedSlots.length) % occupiedSlots.length;
-  return slotIndex;
-}
-
-function insertPersonInSlot(slotIndex, person) {
-  if (!person || slotIndex < 0) return;
-
-  state.visible[slotIndex] = person;
-  state.visibleIds.add(person.id);
-  replaceNode(slotIndex, person);
 }
 
 function replaceOne(direction = 1) {
-  if (state.openPersonId || state.isOpeningStory || state.focusLocked || state.isPointerHovering || state.isTransitioning) return false;
-  if (Date.now() < state.interactionGuardUntil) return false;
-  if (!state.filtered.length || !state.visible.some(Boolean)) return false;
-
-  const nextPerson = nextAvailablePersonForSequence(direction);
-  if (!nextPerson) return false;
-
-  const slotIndex = slotIndexForRotation(direction);
-  if (slotIndex < 0) return false;
-
-  state.isTransitioning = true;
-  clearFocusMode(true);
-
-  fadeOutSlot(slotIndex, () => {
-    if (state.openPersonId || state.isOpeningStory || state.focusLocked || state.query) {
-      state.isTransitioning = false;
-      return;
-    }
-
-    insertPersonInSlot(slotIndex, nextPerson);
-    updatePathProgress();
-
-    window.setTimeout(() => {
-      state.isTransitioning = false;
-    }, SLOT_ROTATION_SETTLE_MS);
-  });
-
-  return true;
+  nextPage(direction);
 }
 
 function clearSlotNode(slotIndex) {
@@ -1875,14 +1807,14 @@ function syncStoryFromQuery() {
 function startTimer() {
   stopTimer();
 
-  if (state.query || state.paused || state.openPersonId || state.isOpeningStory || state.focusLocked || state.isPointerHovering) return;
+  if (state.query || state.paused || state.openPersonId || state.isOpeningStory || state.focusLocked || state.isPointerHovering || state.isTransitioning) return;
 
   state.timer = window.setTimeout(function tick() {
     if (!state.query && !state.paused && !state.openPersonId && !state.isOpeningStory && !state.focusLocked && !state.isPointerHovering && !state.isTransitioning) {
-      replaceOne(1);
+      nextPage(1);
     }
 
-    if (!state.query && !state.paused && !state.openPersonId && !state.isOpeningStory && !state.focusLocked && !state.isPointerHovering) {
+    if (!state.query && !state.paused && !state.openPersonId && !state.isOpeningStory && !state.focusLocked && !state.isPointerHovering && !state.isTransitioning) {
       state.timer = window.setTimeout(tick, ROTATE_MS);
     }
   }, ROTATE_MS);
