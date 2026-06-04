@@ -1733,16 +1733,17 @@ function closeStory() {
 
 function renderStory(person) {
   const lit = CandleStore.isLit(person.id);
+  const paragraphs = storyParagraphs(person);
 
   const overlay = el("div", {
-    class: "story-overlay",
+    class: "story-overlay story-overlay-v39",
     role: "dialog",
     "aria-modal": "true",
     "aria-labelledby": "story-title",
   });
 
   const closeBtn = el("button", {
-    class: "close-story",
+    class: "close-story close-story-v39",
     type: "button",
     "aria-label": "סגירת סיפור",
     onClick: closeStory,
@@ -1750,37 +1751,52 @@ function renderStory(person) {
 
   const candleBtn = el("button", {
     type: "button",
+    class: "primary-candle-button-v39",
     onClick: () => {
       CandleStore.light(person.id);
       renderStory(person);
     },
   }, lit ? `נר דולק · ${CandleStore.count(person.id)}` : `הדלקת נר · ${CandleStore.count(person.id)}`);
 
-  const panel = el("article", { class: "story-panel", tabindex: "-1" },
-    closeBtn,
-    el("div", { class: "story-grid-head" },
-      el("div", { class: "story-photo" },
-        person.photo
-          ? createPortraitImage(person)
-          : el("span", { class: "portrait-placeholder", text: initials(person.name), "aria-hidden": "true" })
-      ),
-      el("div", { class: "story-copy" },
-        el("h2", { id: "story-title", text: formatDisplayName(person.name) }),
-        el("div", { class: "story-meta" },
-          el("span", { text: person.community || "יישוב לא צוין" }),
-          getAge(person) !== null ? el("span", { text: `גיל ${person.age}` }) : null,
-          guardLabel(person) ? el("span", { text: guardLabel(person) }) : null
-        ),
-        el("div", { class: "story-description" },
-          storyParagraphs(person).map((paragraph, index) => storyParagraphNode(paragraph, index))
-        ),
-        el("div", { class: "story-actions" }, candleBtn)
-      )
+  const metaItems = [
+    person.community || "יישוב לא צוין",
+    getAge(person) !== null ? `גיל ${person.age}` : null,
+    guardLabel(person),
+  ].filter(Boolean);
+
+  const heroPhoto = el("div", { class: "story-photo story-photo-v39" },
+    person.photo
+      ? createPortraitImage(person)
+      : el("span", { class: "portrait-placeholder", text: initials(person.name), "aria-hidden": "true" })
+  );
+
+  const heroCopy = el("div", { class: "story-heading-v39" },
+    el("span", { class: "story-kicker-v39", text: "סיפור חיים וזיכרון" }),
+    el("h2", { id: "story-title", text: formatDisplayName(person.name) }),
+    el("div", { class: "story-meta story-meta-v39" },
+      metaItems.map((item) => el("span", { text: item }))
     ),
-    candlePrintSection(person),
+    el("p", { class: "story-lead-v39", text: "חלון זיכרון אישי, מכבד וקריא — עם מקום לאדם, למשפחה, ולמורשת שהשאיר או השאירה אחריו." }),
+    el("div", { class: "story-actions story-actions-v39" }, candleBtn)
+  );
+
+  const storyMain = el("section", { class: "story-main-v39", "aria-label": "תיאור הסיפור" },
+    el("div", { class: "story-description story-description-v39" },
+      paragraphs.map((paragraph, index) => storyParagraphNode(paragraph, index))
+    )
+  );
+
+  const sideItems = [relativesSection(person), storyDetails(person)].filter(Boolean);
+  const sidePanel = sideItems.length
+    ? el("aside", { class: "story-side-v39", "aria-label": "פרטים ומשפחה קרובה" }, sideItems)
+    : null;
+
+  const panel = el("article", { class: "story-panel story-panel-v39", tabindex: "-1" },
+    closeBtn,
+    el("div", { class: "story-hero-v39" }, heroPhoto, heroCopy),
+    el("div", { class: "story-body-v39" }, storyMain, sidePanel),
     familyGroupSection(person),
-    relativesSection(person),
-    storyDetails(person)
+    candlePrintSection(person)
   );
 
   overlay.addEventListener("click", (event) => {

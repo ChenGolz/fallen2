@@ -1,0 +1,8 @@
+V39 fixes:
+- Enlarged desktop/web timeline portrait medallions and name plaques, while leaving mobile sizes controlled.
+- Rebuilt renderStory markup with explicit V39 classes so the new popup design is unmistakable and not dependent on older layout classes.
+- New popup: large portrait column, warm editorial panel, clear story sections, side panel for family/details, and stronger z-index overlay.
+- Updated cache-busting query strings to v39-larger-desktop-images-visible-popup.
+- Kept V38 richer story text and V37/V36/V35 interaction/search fixes.
+- JS syntax checked with node -c app.js.
+- No images folder included.
