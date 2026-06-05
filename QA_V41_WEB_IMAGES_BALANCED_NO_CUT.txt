@@ -1,0 +1,7 @@
+V41 balanced web images:
+- Reduced V40 desktop portrait sizes slightly because they were too large.
+- Added edge-slot portrait/name safety so side portraits are not cut.
+- Mobile remains unchanged.
+- Kept V39 popup redesign, V38 longer descriptions, and latest search/click/hover fixes.
+- Changed files: index.html and styles.css only.
+- No images folder included.

@@ -7040,3 +7040,81 @@ body {
     width: var(--photo-w) !important;
   }
 }
+
+
+/* ==========================================================
+   V41: balanced web portraits, no side cut
+   ========================================================== */
+
+/* V40 was a little too large; this keeps the improved presence but pulls
+   the medallions back so edge portraits such as Ophir are not cropped. */
+@media (min-width: 1201px) {
+  .timeline-layer .person-node {
+    width: clamp(9.1rem, 8.05vw, 10.85rem) !important;
+  }
+
+  .timeline-layer .portrait-frame {
+    width: clamp(7.25rem, 6.45vw, 8.55rem) !important;
+    padding: .36rem !important;
+  }
+
+  .timeline-layer .portrait-frame::before {
+    inset: .50rem !important;
+  }
+
+  .timeline-layer .person-name {
+    max-width: clamp(8.1rem, 8.05vw, 9.7rem) !important;
+    padding: .46rem .72rem .42rem !important;
+    font-size: clamp(.80rem, .86vw, .99rem) !important;
+    line-height: 1.08 !important;
+    border-radius: .75rem !important;
+  }
+}
+
+/* Laptop / smaller desktop: also step down slightly to prevent overlap. */
+@media (min-width: 901px) and (max-width: 1200px) {
+  .timeline-layer .person-node {
+    width: clamp(8.35rem, 9.25vw, 9.75rem) !important;
+  }
+
+  .timeline-layer .portrait-frame {
+    width: clamp(6.75rem, 7.45vw, 7.85rem) !important;
+    padding: .34rem !important;
+  }
+
+  .timeline-layer .portrait-frame::before {
+    inset: .48rem !important;
+  }
+
+  .timeline-layer .person-name {
+    max-width: clamp(7.35rem, 8.25vw, 8.55rem) !important;
+    padding: .43rem .66rem .40rem !important;
+    font-size: clamp(.76rem, .88vw, .94rem) !important;
+    line-height: 1.08 !important;
+  }
+}
+
+/* Edge safety: first/last desktop slots are just a touch smaller so they do not crop at the sides. */
+@media (min-width: 901px) {
+  .timeline-layer .person-node[data-slot-index="0"] .portrait-frame,
+  .timeline-layer .person-node[data-slot-index="7"] .portrait-frame {
+    width: calc(clamp(7.25rem, 6.45vw, 8.55rem) * .94) !important;
+  }
+
+  .timeline-layer .person-node[data-slot-index="0"] .person-name,
+  .timeline-layer .person-node[data-slot-index="7"] .person-name {
+    transform: scale(.96) !important;
+    transform-origin: top center !important;
+  }
+}
+
+/* Mobile remains unchanged. */
+@media (max-width: 900px) {
+  .timeline-layer .person-node {
+    width: var(--node-w) !important;
+  }
+
+  .timeline-layer .portrait-frame {
+    width: var(--photo-w) !important;
+  }
+}
