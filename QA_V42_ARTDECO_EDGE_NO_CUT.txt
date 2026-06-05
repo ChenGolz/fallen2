@@ -1,0 +1,9 @@
+V42 art-deco edge no-cut fix:
+- Fixed the art-deco-only issue where the rightmost portrait/name plaque could be cut at the screen edge.
+- Moved desktop slot 7 inward from the previous extreme right position.
+- Adjusted slot 6 slightly inward to keep visual spacing balanced.
+- V41 portrait sizing is preserved; this is a position/safety fix, not a size reduction.
+- Mobile remains unchanged.
+- Neon version included for consistency; no neon layout correction was needed.
+- Changed files: index.html and styles.css only.
+- No images folder included.

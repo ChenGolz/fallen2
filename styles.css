@@ -7118,3 +7118,39 @@ body {
     width: var(--photo-w) !important;
   }
 }
+
+
+/* ==========================================================
+   V42 Art-deco edge correction:
+   Slot 7 was too close to the right edge in the art-deco layout.
+   This moves only the last desktop slot inward while keeping the
+   bigger V41 portrait size.
+   ========================================================== */
+
+@media (min-width: 1181px) {
+  .timeline-layer .person-node[data-slot-index="7"],
+  .person-node[data-slot-index="7"] {
+    left: 94% !important;
+    right: auto !important;
+  }
+
+  .timeline-layer .person-node[data-slot-index="6"],
+  .person-node[data-slot-index="6"] {
+    left: 85.5% !important;
+    right: auto !important;
+  }
+}
+
+@media (min-width: 901px) and (max-width: 1180px) {
+  .timeline-layer .person-node[data-slot-index="7"],
+  .person-node[data-slot-index="7"] {
+    left: 93.5% !important;
+    right: auto !important;
+  }
+
+  .timeline-layer .person-node[data-slot-index="6"],
+  .person-node[data-slot-index="6"] {
+    left: 85.5% !important;
+    right: auto !important;
+  }
+}
