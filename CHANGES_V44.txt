@@ -1,0 +1,9 @@
+V44 update
+==========
+
+1. Fixed desktop right-edge portrait overlap by switching the live portrait slots to explicit, evenly spaced left-based coordinates.
+2. Kept RTL visual flow: the first portrait still starts from the right, but with safe spacing between the first two nodes.
+3. Made family-group member names clickable in the story popup when that person exists in the memorial data.
+4. Made identified first-degree relatives clickable in the family details card, especially for families such as the Kutz family.
+5. Current/open person remains a non-clickable chip to avoid accidental reloads.
+6. Added accessible labels and focus styles for the new family navigation buttons.

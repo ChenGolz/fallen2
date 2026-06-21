@@ -8,23 +8,26 @@ const CANDLE_KEY = "memorial-final-candles-v1";
 const PHOTO_OVERRIDES = {};
 
 const DESKTOP_POINTS = [
-  { x: 16, y: 58, side: "top", size: .80 },
-  { x: 28, y: 80, side: "bottom", size: .76 },
-  { x: 40, y: 58, side: "top", size: .80 },
-  { x: 52, y: 80, side: "bottom", size: .76 },
-  { x: 64, y: 58, side: "top", size: .80 },
-  { x: 76, y: 80, side: "bottom", size: .76 },
-  { x: 88, y: 58, side: "top", size: .80 },
-  { x: 8,  y: 80, side: "bottom", size: .76 },
+  // Desktop uses explicit left-based coordinates so the RTL visual order starts
+  // from the right but the first two portraits no longer collide at the edge.
+  { x: 91, y: 58, side: "top", size: .78 },
+  { x: 78, y: 80, side: "bottom", size: .74 },
+  { x: 65, y: 58, side: "top", size: .78 },
+  { x: 52, y: 80, side: "bottom", size: .74 },
+  { x: 39, y: 58, side: "top", size: .78 },
+  { x: 26, y: 80, side: "bottom", size: .74 },
+  { x: 13, y: 58, side: "top", size: .78 },
+  { x: 7,  y: 80, side: "bottom", size: .70 },
 ];
 
 const MOBILE_POINTS = [
-  { x: 18, y: 53.0, side: "top", size: .58 },
-  { x: 18, y: 75.0, side: "bottom", size: .54 },
-  { x: 50, y: 53.0, side: "top", size: .58 },
-  { x: 50, y: 75.0, side: "bottom", size: .54 },
+  // Keep the mobile flow visually right-to-left after the desktop positioning fix.
   { x: 82, y: 53.0, side: "top", size: .58 },
   { x: 82, y: 75.0, side: "bottom", size: .54 },
+  { x: 50, y: 53.0, side: "top", size: .58 },
+  { x: 50, y: 75.0, side: "bottom", size: .54 },
+  { x: 18, y: 53.0, side: "top", size: .58 },
+  { x: 18, y: 75.0, side: "bottom", size: .54 },
 ];
 
 const state = {
@@ -1211,9 +1214,10 @@ function renderPersonNode(person, index) {
     class: `person-node ${isTop ? "is-top" : "is-bottom"}`,
     dataset: { personId: person.id, slotIndex: String(index) },
     style: {
-      right: `${point.x}%`,
-      left: "auto",
+      left: `${point.x}%`,
+      right: "auto",
       top: `${point.y}%`,
+      translate: "-50% -50%",
       "--node-w": `${7.7 * scale}rem`,
       "--photo-w": `${6.25 * scale}rem`,
       "--from-y": isTop ? "1rem" : "-1rem",
@@ -1539,6 +1543,113 @@ function familyMemberRows(person) {
   });
 }
 
+
+function personLookupKeys(person) {
+  return [
+    person?.name,
+    person?.excelDisplayName,
+    person?.updatedExcelName,
+    formatDisplayName(person?.name || ""),
+  ]
+    .map((value) => cleanOrderText(value))
+    .filter(Boolean);
+}
+
+function lookupPersonByName(rawName, contextPerson = null) {
+  const key = cleanOrderText(rawName);
+  if (!key) return null;
+
+  const contextPool = contextPerson?.familyGroupId
+    ? state.people.filter((person) => person.familyGroupId === contextPerson.familyGroupId)
+    : [];
+
+  const pools = [contextPool, state.people].filter((pool) => pool.length);
+
+  for (const pool of pools) {
+    const exact = pool.find((person) => personLookupKeys(person).includes(key));
+    if (exact) return exact;
+  }
+
+  // Relative rows sometimes contain only first names, e.g. "אביב" or "רותם".
+  // Use the family group first so we do not create a wrong link for common names.
+  for (const pool of pools) {
+    const firstNameMatches = pool.filter((person) => {
+      const parts = displayNameParts(person.name).map((part) => cleanOrderText(part));
+      const display = cleanOrderText(formatDisplayName(person.name));
+      return parts.includes(key) || display.split(" ").includes(key);
+    });
+
+    if (firstNameMatches.length === 1) return firstNameMatches[0];
+  }
+
+  return null;
+}
+
+function splitHebrewNameList(value) {
+  return String(value || "")
+    .split(/\s*,\s*|\s+ו(?=[^\s,]+)/u)
+    .map((part) => part.trim())
+    .filter(Boolean);
+}
+
+function openLinkedFamilyPerson(target, event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  if (!target || target.id === state.openPersonId) return;
+  openStory(target);
+}
+
+function linkedFamilyButton(target, label, contextPerson, className) {
+  const text = String(label || formatDisplayName(target?.name || "")).trim();
+
+  if (!target || target.id === contextPerson?.id) {
+    return el("span", { class: `${className} is-current`, text });
+  }
+
+  return el("button", {
+    class: `${className} is-clickable`,
+    type: "button",
+    title: `פתיחת הסיפור של ${formatDisplayName(target.name)}`,
+    "aria-label": `פתיחת הסיפור של ${formatDisplayName(target.name)}`,
+    onClick: (event) => openLinkedFamilyPerson(target, event),
+  }, text);
+}
+
+function familyGroupMemberNode(member, contextPerson) {
+  const target = lookupPersonByName(member, contextPerson);
+  if (!target) {
+    return el("span", { class: "family-member-link", text: member });
+  }
+
+  return linkedFamilyButton(target, formatDisplayName(target.name), contextPerson, "family-member-link");
+}
+
+function relativeValueNode(value, contextPerson) {
+  const raw = String(value || "").trim();
+  const parts = splitHebrewNameList(raw);
+
+  if (!raw || !parts.length) {
+    return el("strong", { class: "relative-value", text: raw });
+  }
+
+  const nodes = parts.map((part) => {
+    const target = lookupPersonByName(part, contextPerson);
+    return target
+      ? linkedFamilyButton(target, part, contextPerson, "relative-link-button")
+      : el("span", { class: "relative-name-token", text: part });
+  });
+
+  const hasClickable = nodes.some((node) => node.classList?.contains("is-clickable"));
+  if (!hasClickable) {
+    return el("strong", { class: "relative-value", text: raw });
+  }
+
+  return el("strong", { class: "relative-value relative-value-linked" }, nodes);
+}
+
 function relativesSection(person) {
   const rows = familyMemberRows(person);
   if (!rows.length) return null;
@@ -1552,7 +1663,7 @@ function relativesSection(person) {
       rows.map(([label, value]) =>
         el("div", { class: "relative-pill" },
           el("span", { class: "relative-label", text: label }),
-          el("strong", { class: "relative-value", text: value })
+          relativeValueNode(value, person)
         )
       )
     )
@@ -1581,7 +1692,7 @@ function familyGroupSection(person) {
       el("h3", { text: person.familyGroupTitle || "נרצחו יחד" }),
       person.familyGroupNote ? el("p", { text: person.familyGroupNote }) : null,
       members.length ? el("div", { class: "family-group-members" },
-        members.map((member) => el("span", { text: member }))
+        members.map((member) => familyGroupMemberNode(member, person))
       ) : null
     )
   );
@@ -1786,7 +1897,9 @@ function openStory(person) {
 
   state.isOpeningStory = true;
   state.interactionGuardUntil = Date.now() + 2400;
-  state.lastFocusedBeforeStory = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  if (!state.openPersonId) {
+    state.lastFocusedBeforeStory = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  }
   pauseRotationForInteraction();
   lockStoryScroll();
   state.openPersonId = person.id;
