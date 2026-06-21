@@ -1,7 +1,7 @@
 "use strict";
 
 const PAGE_SIZE = 8;
-const ROTATE_MS = 6400;
+const ROTATE_MS = 9800;
 const AUTO_HIGHLIGHT_AFTER_CHANGE_MS = 2800;
 const CANDLE_KEY = "memorial-final-candles-v1";
 
@@ -57,6 +57,7 @@ const state = {
   clickGuardTimer: null,
   captureClickTimer: null,
   interactionGuardUntil: 0,
+  lastFocusedBeforeStory: null,
 };
 
 const els = {
@@ -179,6 +180,90 @@ function announce(message) {
   if (!els.announcer) return;
   els.announcer.textContent = "";
   setTimeout(() => { els.announcer.textContent = message; }, 20);
+}
+
+function readJsonFromStorage(key, fallback = {}) {
+  try {
+    const raw = window.localStorage?.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function writeJsonToStorage(key, value) {
+  try {
+    window.localStorage?.setItem(key, JSON.stringify(value));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function setPauseButton(isPaused) {
+  if (!els.pause) return;
+  const iconText = isPaused ? "▶" : "Ⅱ";
+  const labelText = isPaused ? "הפעלה" : "השהיה";
+
+  let icon = els.pause.querySelector(".icon");
+  if (!icon) {
+    icon = el("span", { class: "icon", "aria-hidden": "true" });
+    els.pause.prepend(icon);
+  }
+
+  icon.textContent = iconText;
+  Array.from(els.pause.childNodes).forEach((node) => {
+    if (node !== icon) node.remove();
+  });
+  els.pause.append(document.createTextNode(labelText));
+}
+
+function focusableElements(container) {
+  if (!container) return [];
+  const selector = [
+    "a[href]",
+    "button:not([disabled])",
+    "input:not([disabled])",
+    "select:not([disabled])",
+    "textarea:not([disabled])",
+    "[tabindex]:not([tabindex=\"-1\"])"
+  ].join(",");
+
+  return Array.from(container.querySelectorAll(selector))
+    .filter((node) => node.offsetParent !== null || node === document.activeElement);
+}
+
+function trapFocusInStory(event) {
+  if (event.key !== "Tab" || !state.openPersonId || !els.storyRoot) return;
+
+  const overlay = els.storyRoot.querySelector(".story-overlay");
+  if (!overlay) return;
+
+  const focusables = focusableElements(overlay);
+  if (!focusables.length) {
+    event.preventDefault();
+    overlay.focus?.({ preventScroll: true });
+    return;
+  }
+
+  const first = focusables[0];
+  const last = focusables[focusables.length - 1];
+
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus({ preventScroll: true });
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus({ preventScroll: true });
+  }
+}
+
+function lockStoryScroll() {
+  document.body.classList.add("story-is-open");
+}
+
+function unlockStoryScroll() {
+  document.body.classList.remove("story-is-open");
 }
 
 function updateUrlSafely(url, stateObject = {}) {
@@ -442,11 +527,10 @@ function visibleCount() {
 
 const CandleStore = {
   read() {
-    try { return JSON.parse(localStorage.getItem(CANDLE_KEY) || "{}"); }
-    catch { return {}; }
+    return readJsonFromStorage(CANDLE_KEY, {});
   },
   save(map) {
-    localStorage.setItem(CANDLE_KEY, JSON.stringify(map));
+    writeJsonToStorage(CANDLE_KEY, map);
   },
   isLit(id) {
     return Boolean(this.read()[id]);
@@ -1642,11 +1726,12 @@ function printCandleLabel(person) {
 </body>
 </html>`;
 
-  const printWindow = window.open("", "_blank", "noopener,noreferrer,width=520,height=720");
+  const printWindow = window.open("", "_blank", "width=520,height=720");
   if (!printWindow) {
     alert(candlePrintLines(person).join("\n"));
     return;
   }
+  try { printWindow.opener = null; } catch {}
   printWindow.document.open();
   printWindow.document.write(printable);
   printWindow.document.close();
@@ -1701,7 +1786,9 @@ function openStory(person) {
 
   state.isOpeningStory = true;
   state.interactionGuardUntil = Date.now() + 2400;
+  state.lastFocusedBeforeStory = document.activeElement instanceof HTMLElement ? document.activeElement : null;
   pauseRotationForInteraction();
+  lockStoryScroll();
   state.openPersonId = person.id;
 
   const url = new URL(window.location.href);
@@ -1718,15 +1805,23 @@ function openStory(person) {
 }
 
 function closeStory() {
+  const focusTarget = state.lastFocusedBeforeStory;
+
   state.openPersonId = null;
   state.isOpeningStory = false;
   state.interactionGuardUntil = Date.now() + 650;
+  state.lastFocusedBeforeStory = null;
   els.storyRoot.replaceChildren();
+  unlockStoryScroll();
   clearFocusMode(true);
 
   const url = new URL(window.location.href);
   url.searchParams.delete("id");
   updateUrlSafely(url, {});
+
+  if (focusTarget?.isConnected) {
+    focusTarget.focus({ preventScroll: true });
+  }
 
   resumeRotationAfterInteraction(900);
 }
@@ -1740,6 +1835,7 @@ function renderStory(person) {
     role: "dialog",
     "aria-modal": "true",
     "aria-labelledby": "story-title",
+    tabindex: "-1",
   });
 
   const closeBtn = el("button", {
@@ -1805,7 +1901,10 @@ function renderStory(person) {
 
   overlay.append(panel);
   els.storyRoot.replaceChildren(overlay);
-  panel.focus({ preventScroll: true });
+  requestAnimationFrame(() => {
+    const firstAction = closeBtn || panel;
+    firstAction.focus({ preventScroll: true });
+  });
 }
 
 function syncStoryFromQuery() {
@@ -1815,6 +1914,7 @@ function syncStoryFromQuery() {
   const person = state.people.find((item) => item.id === id);
   if (person && state.openPersonId !== id) {
     state.openPersonId = person.id;
+    lockStoryScroll();
     renderStory(person);
     focusPerson(person, true, "open");
   }
@@ -1890,9 +1990,7 @@ function initEvents() {
   els.pause.addEventListener("click", () => {
     state.paused = !state.paused;
     els.pause.setAttribute("aria-pressed", String(state.paused));
-    els.pause.innerHTML = state.paused
-      ? '<span class="icon" aria-hidden="true">▶</span>הפעלה'
-      : '<span class="icon" aria-hidden="true">Ⅱ</span>השהיה';
+    setPauseButton(state.paused);
 
     if (state.paused) stopTimer();
     else startTimer();
@@ -1905,9 +2003,15 @@ function initEvents() {
   }, 180));
 
   document.addEventListener("keydown", (event) => {
+    trapFocusInStory(event);
+
     if (event.key === "Escape" && state.openPersonId) closeStory();
-    if (event.key === "ArrowLeft" && !state.openPersonId) nextPage(1);
-    if (event.key === "ArrowRight" && !state.openPersonId) nextPage(-1);
+
+    const isTyping = ["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement?.tagName || "");
+    if (isTyping || state.openPersonId) return;
+
+    if (event.key === "ArrowLeft") nextPage(1);
+    if (event.key === "ArrowRight") nextPage(-1);
   });
 
   window.addEventListener("popstate", syncStoryFromQuery);

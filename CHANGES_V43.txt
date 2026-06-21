@@ -1,0 +1,21 @@
+V43 production polish
+======================
+
+Main improvements:
+- Reduced the public data payload by keeping only the fields used by the live site.
+- Kept the original visual design and memorial flow intact.
+- Added safer localStorage handling for candle lighting when browser storage is blocked.
+- Replaced the pause button innerHTML update with DOM-safe text/icon updates.
+- Added story popup scroll locking and focus restoration after close.
+- Added a keyboard focus trap inside the story popup.
+- Prevented left/right keyboard navigation while typing in the search field.
+- Improved initial deep-link popup behavior for URLs using ?id=person-xxx.
+- Fixed the print-window flow for candle labels so the printable page can open/write reliably.
+- Added stronger visible focus outlines and better mobile controls/popup safety.
+- Slowed automatic rotation from 6.4s to 9.8s for a calmer memorial experience.
+- Added aria-label to the search input and tabindex to the main skip-link target.
+
+Validation performed:
+- JavaScript syntax check passed with node --check app.js.
+- data.json parsed successfully as valid JSON.
+- Production package contains only the live site files plus this change log.

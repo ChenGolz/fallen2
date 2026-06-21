@@ -10,14 +10,14 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=v42-artdeco-edge-no-cut" />
+  <link rel="stylesheet" href="styles.css?v=v43-production-polish" />
 </head>
 
 <body>
   <a class="skip-link" href="#memory-stage">דילוג לשביל הזיכרון</a>
   <div id="sr-announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
 
-  <main id="memory-stage" class="memory-stage" aria-label="שביל זיכרון">
+  <main id="memory-stage" class="memory-stage" aria-label="שביל זיכרון" tabindex="-1">
     <div class="mist" aria-hidden="true"></div>
     <div class="grain" aria-hidden="true"></div>
 
@@ -33,9 +33,9 @@
       <label class="search-box">
         <span aria-hidden="true">⌕</span>
         <span class="sr-only">חיפוש לפי שם, יישוב, גיל או סיפור</span>
-        <input id="search-input" type="search" placeholder="חיפוש שם…" autocomplete="off" />
+        <input id="search-input" type="search" placeholder="חיפוש שם…" autocomplete="off" aria-label="חיפוש לפי שם, יישוב, גיל או סיפור" />
       </label>
-</header>
+      </header>
 
     <section class="hero-title hero-poem" aria-label="שיר הזיכרון">
       <div class="poem-panel">
@@ -179,7 +179,7 @@
 
   <div id="story-root"></div>
 
-  <script src="data.js?v=v42-artdeco-edge-no-cut"></script>
-  <script src="app.js?v=v42-artdeco-edge-no-cut"></script>
+  <script src="data.js?v=v43-production-polish"></script>
+  <script src="app.js?v=v43-production-polish"></script>
 </body>
 </html>
